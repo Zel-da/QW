@@ -22,7 +22,9 @@ CREATE TABLE Products (
 );
 
 -- Inspections Table: The core table that records all defect incidents and their resolution status.
+
 -- NOTE: This schema has been updated to match the application code.
+
 CREATE TABLE Inspections (
     id INT PRIMARY KEY IDENTITY(1,1),
     company_id INT FOREIGN KEY REFERENCES Companies(id),

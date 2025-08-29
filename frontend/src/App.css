@@ -1,0 +1,14 @@
+/* Basic styles for the application */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    overflow: auto;
+    padding: 0 2rem;
+}
