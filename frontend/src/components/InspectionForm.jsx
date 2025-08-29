@@ -65,7 +65,8 @@ function InspectionForm({ onDataUpdate }) {
                     <Grid xs={12} sm={4}><TextField name="company_name" label="업체명" value={formData.company_name} onChange={handleChange} required fullWidth /></Grid>
                     <Grid xs={12} sm={4}><TextField name="product_name" label="제품명" value={formData.product_name} onChange={handleChange} required fullWidth /></Grid>
                     <Grid xs={12} sm={4}><TextField name="product_code" label="제품 코드" value={formData.product_code} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid xs={12}>
+                    <Grid xs={12} sm={4}><TextField name="product_count" type="number" label="제품 수량" value={formData.product_count} onChange={handleChange} required fullWidth /></Grid>
+                    <Grid xs={12} sm={8}>
                         <FormControl fullWidth required>
                             <InputLabel>불량 원인</InputLabel>
                             <Select name="defect_reason" value={formData.defect_reason} label="불량 원인" onChange={handleChange} displayEmpty>

@@ -79,11 +79,11 @@ def add_inspection():
         # 3. Insert Inspection Record
         insert_query = """
             INSERT INTO Inspections
-            (company_id, product_id, user_id, defect_reason, solution, target_date, progress_percentage)
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+            (company_id, product_id, user_id, product_count, defect_reason, solution, target_date, progress_percentage)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
         params = (
-            company_id, product_id, data['user_id'],
+            company_id, product_id, data['user_id'], data['product_count'],
             data.get('defect_reason'), data.get('solution'),
             data.get('target_date'), data.get('progress_percentage', 0)
         )
