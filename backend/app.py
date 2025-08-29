@@ -134,8 +134,9 @@ def add_inspection():
         if company:
             company_id = company.id
         else:
-            cursor.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
-            cursor.execute("SELECT SCOPE_IDENTITY()")
+            # OUTPUT INSERTED.id를 사용하여 더 안정적으로 새 ID를 가져옵니다.
+            sql_insert_company = "INSERT INTO Companies (company_name) OUTPUT INSERTED.id VALUES (?)"
+            cursor.execute(sql_insert_company, (company_name,))
             company_id = cursor.fetchone()[0]
 
         # 4. 제품(Product) ID 확인 또는 생성
@@ -146,17 +147,16 @@ def add_inspection():
         if product:
             product_id = product.id
         else:
-            cursor.execute("INSERT INTO Products (product_name, product_code) VALUES (?, ?)", (product_name, product_code))
-            cursor.execute("SELECT SCOPE_IDENTITY()")
+            # OUTPUT INSERTED.id를 사용하여 더 안정적으로 새 ID를 가져옵니다.
+            sql_insert_product = "INSERT INTO Products (product_name, product_code) OUTPUT INSERTED.id VALUES (?, ?)"
+            cursor.execute(sql_insert_product, (product_name, product_code))
             product_id = cursor.fetchone()[0]
         
         # 5. 검수(Inspection) 데이터 추가
-        # 참고: schema.sql과 코드가 불일치하여 코드에 있는 필드 기준으로 구현합니다.
-        # user_id는 임시로 1을 사용합니다. 실제로는 인증된 사용자 ID를 사용해야 합니다.
         params = (
             company_id,
             product_id,
-            data.get('user_id', 1),
+            data.get('user_id', 1), # TODO: 실제 인증된 사용자 ID로 교체 필요
             data.get('inspected_quantity'),
             data.get('defective_quantity'),
             data.get('actioned_quantity'),
@@ -166,7 +166,6 @@ def add_inspection():
             data.get('progress_percentage', 0)
         )
         
-        # 컬럼 이름이 스키마와 다른 문제를 해결하기 위해 코드에 맞춰 작성
         insert_query = """
             INSERT INTO Inspections 
             (company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity, 
