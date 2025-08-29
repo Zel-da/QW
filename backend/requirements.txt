@@ -1,0 +1,6 @@
+Flask
+pyodbc
+Flask-Cors
+passlib
+python-dotenv
+waitress
