@@ -71,7 +71,7 @@ def add_inspection():
             product_id = product.id
         else:
             cursor.execute("INSERT INTO Products (product_name, product_code) VALUES (?, ?)", (data['product_name'], product_code))
-            cursor.execute("SELECT SCOPE_IDENTITY()"))
+            cursor.execute("SELECT SCOPE_IDENTITY()")
             product_id = cursor.fetchone()[0]
 
         # 3. Insert Inspection Record
