@@ -60,7 +60,7 @@ def add_inspection():
             company_id = company.id
         else:
             cursor.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
-            cursor.execute("SELECT SCOPE_IDENTITY()"))
+            cursor.execute("SELECT SCOPE_IDENTITY()")
             company_id = cursor.fetchone()[0]
 
         # 2. Get/Create Product ID

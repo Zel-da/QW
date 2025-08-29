@@ -128,4 +128,4 @@ onClick={handleDelete} color="error">삭제</Button></DialogActions></Dialog>
     );
 }
 
-export default InspectionList;t InspectionList;
+export default InspectionList;
