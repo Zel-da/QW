@@ -17,9 +17,7 @@ def get_inspections():
         query = """
             SELECT 
                 i.id, u.username, c.company_name, p.product_name, p.product_code, 
-                i.inspected_quantity, i.defective_quantity, i.actioned_quantity, i.defect_reason, 
-                i.solution, i.received_date, i.target_date, i.completion_date, i.progress_percentage,
-                i.status, i.image_path, i.excel_path
+                i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
             FROM Inspections i
             JOIN Users u ON i.user_id = u.id
             JOIN Companies c ON i.company_id = c.id
@@ -80,13 +78,12 @@ def add_inspection():
         # 3. Insert Inspection Record
         insert_query = """
             INSERT INTO Inspections
-            (company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity,
-            defect_reason, solution, target_date, progress_percentage)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            (company_id, product_id, user_id, defect_reason, solution, target_date, progress_percentage)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
         """
         params = (
-            company_id, product_id, data['user_id'], data['inspected_quantity'], data['defective_quantity'],
-            data.get('actioned_quantity'), data.get('defect_reason'), data.get('solution'),
+            company_id, product_id, data['user_id'],
+            data.get('defect_reason'), data.get('solution'),
             data.get('target_date'), data.get('progress_percentage', 0)
         )
         cursor.execute(insert_query, params)
@@ -107,7 +104,7 @@ def add_inspection():
 def update_inspection(id):
     """Updates an existing inspection record."""
     data = request.get_json()
-    update_fields = ['inspected_quantity', 'defective_quantity', 'actioned_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage']
+    update_fields = ['defect_reason', 'solution', 'target_date', 'progress_percentage']
     set_clause = ", ".join([f"{field} = ?" for field in data if field in update_fields])
     if not set_clause: return jsonify({"message": "No valid fields to update"}), 400
     
