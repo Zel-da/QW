@@ -33,6 +33,7 @@ def get_inspections():
 
         return jsonify(inspections), 200
     except Exception as e:
+        print(f"!!! ERROR in get_inspections: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
@@ -95,6 +96,7 @@ def add_inspection():
 
     except Exception as e:
         conn.rollback()
+        print(f"!!! ERROR in add_inspection: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
@@ -122,6 +124,7 @@ def update_inspection(id):
         return jsonify({"message": "Inspection updated successfully"}), 200
     except Exception as e:
         conn.rollback()
+        print(f"!!! ERROR in update_inspection: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
@@ -140,6 +143,7 @@ def delete_inspection(id):
         return jsonify({"message": "Inspection deleted successfully"}), 200
     except Exception as e:
         conn.rollback()
+        print(f"!!! ERROR in delete_inspection: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
@@ -156,6 +160,7 @@ def get_companies():
         companies = [{"id": row.id, "company_name": row.company_name} for row in cursor.fetchall()]
         return jsonify(companies), 200
     except Exception as e:
+        print(f"!!! ERROR in get_companies: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
@@ -172,6 +177,7 @@ def get_users():
         users = [{"id": row.id, "username": row.username} for row in cursor.fetchall()]
         return jsonify(users), 200
     except Exception as e:
+        print(f"!!! ERROR in get_users: {e}")
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         cursor.close()
