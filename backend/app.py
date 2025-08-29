@@ -1,7 +1,7 @@
 
 import os
 import pyodbc
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from passlib.hash import pbkdf2_sha256 as sha256
 from dotenv import load_dotenv
@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'dist'))
 CORS(app)  # Enable CORS for all routes
 
 # Load configuration from environment variables
@@ -24,10 +24,6 @@ def get_db_connection():
     except Exception as e:
         print(f"Database connection error: {e}")
         return None
-
-@app.route('/')
-def index():
-    return "Backend server is running."
 
 # == User Authentication Endpoints ==
 @app.route('/login', methods=['POST'])

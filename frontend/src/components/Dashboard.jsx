@@ -51,7 +51,7 @@ function Dashboard() {
             <AppBar position="static" elevation={0} sx={{ backgroundColor: 'primary.main' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        QW 불량 관리 대시보드
+                        외주업체 출장검사 대쉬보드 현황
                     </Typography>
                     <Button color="inherit" startIcon={<AssessmentIcon />} component={RouterLink} to="/statistics">
                         통계 보기
