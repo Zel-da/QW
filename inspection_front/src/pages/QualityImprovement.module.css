@@ -1,0 +1,242 @@
+/* src/pages/QualityImprovement.module.css */
+
+/* ================== 페이지 레이아웃 ================== */
+.contentTitleArea {
+    padding: 32px 32px 0 32px;
+    margin-bottom: 32px;
+}
+
+.contentMainTitle {
+    font-size: 2rem;
+    margin: 0 0 8px 0;
+}
+
+.contentSubTitle {
+    font-size: 1rem;
+    color: #666;
+    margin: 0;
+}
+
+.scrollableContent {
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0 16px;
+}
+
+/* ================== 섹션 공통 ================== */
+.kpiSection,
+.listSection {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.sectionHeader h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+/* ================== KPI 섹션 ================== */
+.kpiContentWrapper {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.kpiChartContainer {
+    flex: 1;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.kpiCardsContainer {
+    flex: 2;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.kpiCard {
+    flex: 1;
+    min-width: 120px;
+    padding: 16px;
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.kpiValue {
+    font-size: 2.5rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.kpiLabel {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ================== 리스트 섹션 (테이블 및 필터) ================== */
+.filters {
+    display: flex;
+    gap: 12px;
+    flex-grow: 1;
+    justify-content: flex-start;
+}
+
+.filters select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.9rem;
+}
+
+.addButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.inspectionTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: fixed;
+}
+
+.inspectionTable th,
+.inspectionTable td {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inspectionTable th {
+    font-weight: bold;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* ▼▼▼ 컬럼 폭 조정 스타일 ▼▼▼ */
+.managerColumn {
+    width: 8%;
+}
+
+.companyColumn {
+    width: 12%;
+}
+
+.improvementItemColumn {
+    width: 45%;
+}
+
+/* 대폭 확장 */
+.dateColumn {
+    width: 9%;
+}
+
+.progressColumn {
+    width: 10%;
+}
+
+.statusColumn {
+    width: 7%;
+}
+
+/* 개선항목은 줄바꿈 허용 (기존과 동일) */
+.inspectionTable td.improvementItem {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* --- 컬럼 그룹화를 위한 여백 미세 조정 --- */
+
+/* 1번째 컬럼(담당자) 오른쪽 여백 축소 */
+.inspectionTable th:nth-child(1),
+.inspectionTable td:nth-child(1) {
+    padding-right: 4px;
+}
+
+/* 2번째 컬럼(업체명) 왼쪽 여백 축소 */
+.inspectionTable th:nth-child(2),
+.inspectionTable td:nth-child(2) {
+    padding-left: 4px;
+}
+
+/* 4번째 컬럼(시작일) 오른쪽 여백 축소 */
+.inspectionTable th:nth-child(4),
+.inspectionTable td:nth-child(4) {
+    padding-right: 4px;
+}
+
+/* 5번째 컬럼(마감일) 왼쪽 여백 축소 */
+.inspectionTable th:nth-child(5),
+.inspectionTable td:nth-child(5) {
+    padding-left: 4px;
+}
+
+
+.progressBarContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.progressBar {
+    height: 10px;
+    background-color: #a5d6a7;
+    border-radius: 5px;
+}
+
+.statusTag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #3d405b;
+}
+
+/* ================== 색상 정의 ================== */
+.delayed {
+    background-color: #ffab91;
+}
+
+.inProgress {
+    background-color: #ffe082;
+}
+
+.completed {
+    background-color: #a5d6a7;
+}
+
+.total {
+    background-color: #90caf9;
+}
