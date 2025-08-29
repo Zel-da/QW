@@ -4,9 +4,10 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import InspectionList from './InspectionList';
 import InspectionForm from './InspectionForm';
 import StatsGrid from './StatsGrid';
-import { AppBar, Toolbar, Typography, IconButton, Container, Box, Grid, CircularProgress, Alert, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Container, Box, Grid, CircularProgress, Alert, Button, Fab } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import AddIcon from '@mui/icons-material/Add';
 
 const API_URL = '/api';
 
@@ -14,12 +15,12 @@ function Dashboard() {
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isFormOpen, setIsFormOpen] = useState(false); // State for modal
     const navigate = useNavigate();
 
     const fetchInspections = useCallback(async () => {
-        // When refreshing, we don't want to show the main loader, just update in background
-        // setLoading(true);
         try {
+            // setLoading(true); // Don't show main loader on refresh
             const response = await axios.get(`${API_URL}/inspections`);
             setInspections(response.data);
             setError('');
@@ -40,12 +41,17 @@ function Dashboard() {
         navigate('/login');
     };
 
+    const handleAddSuccess = () => {
+        fetchInspections();
+        setIsFormOpen(false); // Close modal on success
+    };
+
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
+        <Box sx={{ flexGrow: 1, backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
+            <AppBar position="static" elevation={0} sx={{ backgroundColor: 'primary.main' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        불량 관리 대시보드
+                        QW 불량 관리 대시보드
                     </Typography>
                     <Button color="inherit" startIcon={<AssessmentIcon />} component={RouterLink} to="/statistics">
                         통계 보기
@@ -66,14 +72,24 @@ function Dashboard() {
                             <StatsGrid data={inspections} />
                         </Grid>
                         <Grid item xs={12}>
-                            <InspectionForm onAddSuccess={fetchInspections} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <InspectionList allInspections={inspections} />
+                            <InspectionList allInspections={inspections} onRefresh={fetchInspections} />
                         </Grid>
                     </Grid>
                 )}
             </Container>
+            <Fab
+                color="primary"
+                aria-label="add"
+                sx={{ position: 'fixed', bottom: 32, right: 32 }}
+                onClick={() => setIsFormOpen(true)}
+            >
+                <AddIcon />
+            </Fab>
+            <InspectionForm
+                open={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                onAddSuccess={handleAddSuccess}
+            />
         </Box>
     );
 }

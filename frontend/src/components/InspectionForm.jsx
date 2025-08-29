@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Box, Typography, Grid, Paper, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Grid,
+    Alert, FormControl, InputLabel, Select, MenuItem, Box
+} from '@mui/material';
 
 const API_URL = '/api';
 const DEFECT_REASONS = ['절곡', '샤링', '제관', '용접', '가공', '작업자 실수'];
@@ -12,10 +14,18 @@ const initialFormData = {
     target_date: '', progress_percentage: 0, user_id: 1
 };
 
-function InspectionForm({ onAddSuccess }) {
+function InspectionForm({ open, onClose, onAddSuccess }) {
     const [formData, setFormData] = useState(initialFormData);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Reset form when modal is closed
+    useEffect(() => {
+        if (!open) {
+            setFormData(initialFormData);
+            setMessage({ type: '', text: '' });
+        }
+    }, [open]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -39,8 +49,6 @@ function InspectionForm({ onAddSuccess }) {
         try {
             const response = await axios.post(`${API_URL}/inspections`, dataToSubmit);
             if (response.status === 201) {
-                setMessage({ type: 'success', text: '성공적으로 등록되었습니다!' });
-                setFormData(initialFormData);
                 if (onAddSuccess) {
                     onAddSuccess();
                 }
@@ -48,46 +56,45 @@ function InspectionForm({ onAddSuccess }) {
         } catch (err) {
             const errorMsg = err.response?.data?.message || '등록에 실패했습니다. 모든 필수 항목을 입력했는지 확인해주세요.';
             setMessage({ type: 'error', text: errorMsg });
-            console.error('Submit error:', err);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-                신규 불량 등록
-            </Typography>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+            <DialogTitle>신규 불량 등록</DialogTitle>
             <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}><TextField name="company_name" label="업체명" value={formData.company_name} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid item xs={12} sm={4}><TextField name="product_name" label="제품명" value={formData.product_name} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid item xs={12} sm={4}><TextField name="product_code" label="제품 코드" value={formData.product_code} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid item xs={12} sm={4}><TextField name="inspected_quantity" type="number" label="검사 수량" value={formData.inspected_quantity} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid item xs={12} sm={4}><TextField name="defective_quantity" type="number" label="불량 수량" value={formData.defective_quantity} onChange={handleChange} required fullWidth /></Grid>
-                    <Grid item xs={12} sm={4}><TextField name="actioned_quantity" type="number" label="조치 수량" value={formData.actioned_quantity} onChange={handleChange} fullWidth /></Grid>
-                    <Grid item xs={12} sm={12}>
-                        <FormControl fullWidth required>
-                            <InputLabel>불량 원인</InputLabel>
-                            <Select name="defect_reason" value={formData.defect_reason} label="불량 원인" onChange={handleChange} displayEmpty>
-                                <MenuItem value="" disabled><em>선택하시오...</em></MenuItem>
-                                {DEFECT_REASONS.map(reason => (<MenuItem key={reason} value={reason}>{reason}</MenuItem>))}
-                            </Select>
-                        </FormControl>
+                <DialogContent>
+                    {message.text && <Alert severity={message.type} sx={{ mb: 2 }} onClose={() => setMessage({ type: '', text: '' })}>{message.text}</Alert>}
+                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                        <Grid item xs={12} sm={4}><TextField name="company_name" label="업체명" value={formData.company_name} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item xs={12} sm={4}><TextField name="product_name" label="제품명" value={formData.product_name} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item xs={12} sm={4}><TextField name="product_code" label="제품 코드" value={formData.product_code} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item xs={12} sm={4}><TextField name="inspected_quantity" type="number" label="검사 수량" value={formData.inspected_quantity} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item xs={12} sm={4}><TextField name="defective_quantity" type="number" label="불량 수량" value={formData.defective_quantity} onChange={handleChange} required fullWidth /></Grid>
+                        <Grid item xs={12} sm={4}><TextField name="actioned_quantity" type="number" label="조치 수량" value={formData.actioned_quantity} onChange={handleChange} fullWidth /></Grid>
+                        <Grid item xs={12}>
+                            <FormControl fullWidth required>
+                                <InputLabel>불량 원인</InputLabel>
+                                <Select name="defect_reason" value={formData.defect_reason} label="불량 원인" onChange={handleChange}>
+                                    {DEFECT_REASONS.map(reason => (<MenuItem key={reason} value={reason}>{reason}</MenuItem>))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12}><TextField name="solution" label="해결 방안" value={formData.solution} onChange={handleChange} multiline rows={3} fullWidth /></Grid>
+                        <Grid item xs={12} sm={6}><TextField name="target_date" label="조치 목표일" type="date" value={formData.target_date} onChange={handleChange} InputLabelProps={{ shrink: true }} fullWidth /></Grid>
+                        <Grid item xs={12} sm={6}><TextField name="progress_percentage" type="number" label="진행률 (%)" value={formData.progress_percentage} inputProps={{ min: 0, max: 100 }} onChange={handleChange} fullWidth /></Grid>
                     </Grid>
-                    <Grid item xs={12} sm={12}><TextField name="solution" label="해결 방안" value={formData.solution} onChange={handleChange} multiline rows={3} fullWidth /></Grid>
-                    <Grid item xs={12} sm={6}><TextField name="target_date" label="조치 목표일" type="date" value={formData.target_date} onChange={handleChange} InputLabelProps={{ shrink: true }} fullWidth /></Grid>
-                    <Grid item xs={12} sm={6}><TextField name="progress_percentage" type="number" label="진행률 (%)" value={formData.progress_percentage} inputProps={{ min: 0, max: 100 }} onChange={handleChange} fullWidth /></Grid>
-                </Grid>
-                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button type="submit" variant="contained" startIcon={<AddCircleOutlineIcon />} disabled={isSubmitting}>
-                        {isSubmitting ? '등록 중...' : '등록하기'}
+                </DialogContent>
+                <DialogActions sx={{ p: '16px 24px' }}>
+                    <Button onClick={onClose}>취소</Button>
+                    <Button type="submit" variant="contained" disabled={isSubmitting}>
+                        {isSubmitting ? '저장 중...' : '저장'}
                     </Button>
-                </Box>
-                {message.text && <Alert severity={message.type} sx={{ mt: 2 }} onClose={() => setMessage({ type: '', text: '' })}>{message.text}</Alert>}
+                </DialogActions>
             </Box>
-        </Paper>
+        </Dialog>
     );
 }
 
