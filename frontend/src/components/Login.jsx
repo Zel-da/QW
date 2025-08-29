@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import api from '../api'; // Import the centralized api instance
 import { Button, TextField, Container, Typography, Box, Alert } from '@mui/material';
-
-const API_URL = '/api';
 
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${API_URL}/login`, { username, password });
-            if (response.status === 200) {
-                localStorage.setItem('isAuthenticated', 'true');
-                window.location.href = '/';
+            const response = await api.post('/login', { username, password });
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                navigate('/'); // Redirect to dashboard
             }
         } catch (err) {
             setError('아이디 또는 비밀번호가 일치하지 않습니다.');

@@ -17,7 +17,8 @@ const theme = createTheme({
 
 function App() {
   const isAuthenticated = () => {
-    return localStorage.getItem('isAuthenticated') === 'true';
+    // Check if the token exists
+    return !!localStorage.getItem('token');
   };
 
   const ProtectedRoute = ({ children }) => {

@@ -40,7 +40,7 @@ function InspectionList({ allInspections, onRefresh }) {
     const handleDelete = async (id) => {
         if (window.confirm('정말로 이 항목을 삭제하시겠습니까?')) {
             try {
-                await axios.delete(`${API_URL}/inspections/${id}`);
+                await api.delete(`/inspections/${id}`);
                 onRefresh();
             } catch (err) {
                 console.error('Delete error:', err);
@@ -143,4 +143,4 @@ function InspectionList({ allInspections, onRefresh }) {
     );
 }
 
-export default InspectionList;
+export default InspectionList;ectionList;

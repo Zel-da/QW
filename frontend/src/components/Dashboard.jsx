@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import InspectionList from './InspectionList';
 import InspectionForm from './InspectionForm';
