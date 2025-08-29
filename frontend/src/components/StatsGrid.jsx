@@ -19,16 +19,16 @@ function StatsGrid({ data }) {
     return (
         <Box sx={{ mb: 4 }}>
             <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                     <StatsCard title="총 검사 수량" value={totalInspected} color="#1976d2" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                     <StatsCard title="총 불량 수량" value={totalDefective} color="#d32f2f" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                     <StatsCard title="총 조치 수량" value={totalActioned} color="#388e3c" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                     <StatsCard title="불량률" value={defectRate} color="#f57c00" />
                 </Grid>
             </Grid>

@@ -24,10 +24,16 @@ function InspectionList({ allInspections = [] }) {
     useEffect(() => {
         const fetchFilterData = async () => {
             try {
-                const [companiesRes, usersRes] = await Promise.all([axios.get(`${API_URL}/companies`), axios.get(`${API_URL}/users`)]);
+                const [companiesRes, usersRes] = await Promise.all([apiClient.get('/companies'), apiClient.get('/users')]);
                 setCompanies(companiesRes.data);
                 setUsers(usersRes.data);
-            } catch (err) { console.error("Failed to fetch filter data", err); }
+            } catch (err) { 
+                console.error("Failed to fetch filter data", err);
+                if (err.response && err.response.status === 401) {
+                    // Token expired or invalid, redirect to login by reloading (will be caught by ProtectedRoute)
+                    window.location.reload();
+                }
+            }
         };
         fetchFilterData();
     }, []);

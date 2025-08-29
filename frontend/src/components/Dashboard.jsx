@@ -69,14 +69,14 @@ function Dashboard() {
                     <Alert severity="error">{error}</Alert>
                 ) : (
                     <Grid container spacing={3}>
-                        <Grid item xs={12}>
+                        <Grid xs={12}>
                             <StatsGrid data={inspections} />
                         </Grid>
-                        <Grid item xs={12}>
-                            <InspectionForm />
+                        <Grid xs={12}>
+                            <InspectionForm onDataUpdate={handleDataUpdate} />
                         </Grid>
-                        <Grid item xs={12}>
-                            <InspectionList allInspections={inspections} />
+                        <Grid xs={12}>
+                            <InspectionList allInspections={inspections} onDataUpdate={handleDataUpdate} />
                         </Grid>
                     </Grid>
                 )}
