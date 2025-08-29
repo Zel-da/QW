@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const api = axios.create({
-  baseURL: '/api', // Vite proxy will handle redirecting this to the backend
+  baseURL: '/api',
 });
 
-// Add a request interceptor to automatically include the token in all requests
+// Add a request interceptor to include the token in headers
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,16 +19,17 @@ api.interceptors.request.use(
   }
 );
 
-// Optional: Add a response interceptor to handle 401 Unauthorized errors globally
+// Add a response interceptor to handle 401 Unauthorized errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // For example, token expired or is invalid
       localStorage.removeItem('token');
-      // Redirect to login page, but avoid circular dependencies
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        // Instead of forcing a reload, we can just notify the user or use a state management solution
+        // For simplicity now, we reload.
+        window.location.reload();
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
       }
     }
     return Promise.reject(error);
