@@ -107,65 +107,90 @@ def get_inspections():
         cursor.close()
         conn.close()
 
-# 기존 add_inspection 함수를 삭제하고 아래 최종 코드로 교체하세요.
 @app.route('/inspections', methods=['POST'])
 def add_inspection():
-    """Generates an SQL query string instead of executing it."""
+    """Adds a new inspection record to the database securely."""
     data = request.get_json()
 
+    # 1. 데이터 유효성 검사
     required_fields = ['company_name', 'product_name', 'product_code', 'inspected_quantity', 'defective_quantity']
-    if not all(field in data for field in required_fields):
+    if not all(field in data and data[field] is not None for field in required_fields):
         return jsonify({"message": "필수 항목이 누락되었습니다."}), 400
 
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"message": "Database connection failed"}), 500
+    
+    cursor = conn.cursor()
+
     try:
-        # == 데이터 타입 명시적 변환 및 SQL용 '' 처리 ==
-        company_name = str(data.get('company_name', '')).replace("'", "''")
-        product_name = str(data.get('product_name', '')).replace("'", "''")
-        product_code = str(data.get('product_code', '')).replace("'", "''")
-        user_id = int(data.get('user_id', 1))
-        inspected = int(data.get('inspected_quantity') or 0)
-        defective = int(data.get('defective_quantity') or 0)
-        actioned = int(data.get('actioned_quantity') or 0)
-        defect_reason = str(data.get('defect_reason', '')).replace("'", "''")
-        solution = str(data.get('solution', '')).replace("'", "''")
-        target_date = data.get('target_date')
-        if not target_date: target_date = 'NULL'
-        else: target_date = f"'{target_date}'"
-        progress = int(data.get('progress_percentage', 0))
+        # 2. 트랜잭션 시작
+        conn.autocommit = False
 
-        # == 실행할 SQL 구문 생성 ==
-        # 1. 업체 확인 및 추가
-        # 2. 제품 확인 및 추가
-        # 3. 불량 내역 추가
-        sql_query_to_run = f"""
--- 1. 업체 확인 및 추가
-IF NOT EXISTS (SELECT 1 FROM Companies WHERE company_name = '{company_name}')
-BEGIN
-    INSERT INTO Companies (company_name) VALUES ('{company_name}');
-END
+        # 3. 업체(Company) ID 확인 또는 생성
+        company_name = data['company_name']
+        cursor.execute("SELECT id FROM Companies WHERE company_name = ?", (company_name,))
+        company = cursor.fetchone()
+        if company:
+            company_id = company.id
+        else:
+            cursor.execute("INSERT INTO Companies (company_name) VALUES (?)", (company_name,))
+            cursor.execute("SELECT SCOPE_IDENTITY()")
+            company_id = cursor.fetchone()[0]
 
--- 2. 제품 확인 및 추가
-IF NOT EXISTS (SELECT 1 FROM Products WHERE product_code = '{product_code}')
-BEGIN
-    INSERT INTO Products (product_name, product_code) VALUES ('{product_name}', '{product_code}');
-END
+        # 4. 제품(Product) ID 확인 또는 생성
+        product_name = data['product_name']
+        product_code = data['product_code']
+        cursor.execute("SELECT id FROM Products WHERE product_code = ?", (product_code,))
+        product = cursor.fetchone()
+        if product:
+            product_id = product.id
+        else:
+            cursor.execute("INSERT INTO Products (product_name, product_code) VALUES (?, ?)", (product_name, product_code))
+            cursor.execute("SELECT SCOPE_IDENTITY()")
+            product_id = cursor.fetchone()[0]
+        
+        # 5. 검수(Inspection) 데이터 추가
+        # 참고: schema.sql과 코드가 불일치하여 코드에 있는 필드 기준으로 구현합니다.
+        # user_id는 임시로 1을 사용합니다. 실제로는 인증된 사용자 ID를 사용해야 합니다.
+        params = (
+            company_id,
+            product_id,
+            data.get('user_id', 1),
+            data.get('inspected_quantity'),
+            data.get('defective_quantity'),
+            data.get('actioned_quantity'),
+            data.get('defect_reason'),
+            data.get('solution'),
+            data.get('target_date'),
+            data.get('progress_percentage', 0)
+        )
+        
+        # 컬럼 이름이 스키마와 다른 문제를 해결하기 위해 코드에 맞춰 작성
+        insert_query = """
+            INSERT INTO Inspections 
+            (company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity, 
+             defect_reason, solution, target_date, progress_percentage)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        cursor.execute(insert_query, params)
+        
+        # 6. 트랜잭션 커밋
+        conn.commit()
+        
+        return jsonify({"message": "검수 데이터가 성공적으로 추가되었습니다."}), 201
 
--- 3. 최종 불량 내역 추가
-INSERT INTO Inspections
-(company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity,
-defect_reason, solution, target_date, progress_percentage)
-VALUES
-((SELECT id FROM Companies WHERE company_name = '{company_name}'),
- (SELECT id FROM Products WHERE product_code = '{product_code}'),
- {user_id}, {inspected}, {defective}, {actioned},
- '{defect_reason}', '{solution}', {target_date}, {progress});
-"""
-        # 생성된 SQL 쿼리를 프론트엔드로 보냄
-        return jsonify({"sql_query": sql_query_to_run}), 200
-
+    except pyodbc.Error as e:
+        conn.rollback()
+        print(f"Database error: {e}")
+        return jsonify({"message": f"데이터베이스 오류가 발생했습니다: {e}"}), 500
     except Exception as e:
-        print(f"An error occurred during SQL generation: {e}")
-        return jsonify({"message": f"An error occurred during SQL generation: {e}"}), 500
+        conn.rollback()
+        print(f"An error occurred: {e}")
+        return jsonify({"message": f"서버 오류가 발생했습니다: {e}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/inspections/<int:id>', methods=['PUT'])
 def update_inspection(id):

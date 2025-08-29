@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Link as RouterLink } from 'react-router-dom'; // Link import
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import InspectionList from './InspectionList';
 import InspectionForm from './InspectionForm';
 import StatsGrid from './StatsGrid';
@@ -14,27 +14,30 @@ function Dashboard() {
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const fetchInspections = useCallback(async () => {
+        // When refreshing, we don't want to show the main loader, just update in background
+        // setLoading(true);
+        try {
+            const response = await axios.get(`${API_URL}/inspections`);
+            setInspections(response.data);
+            setError('');
+        } catch (err) {
+            setError('데이터를 불러오는 데 실패했습니다.');
+            console.error('Fetch error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        const fetchInspections = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(`${API_URL}/inspections`);
-                setInspections(response.data);
-                setError('');
-            } catch (err) {
-                setError('데이터를 불러오는 데 실패했습니다.');
-                console.error('Fetch error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchInspections();
-    }, []);
+    }, [fetchInspections]);
 
     const handleLogout = () => {
         localStorage.removeItem('isAuthenticated');
-        window.location.href = '/login'; // 로그아웃 시 로그인 페이지로 이동
+        navigate('/login');
     };
 
     return (
@@ -44,7 +47,6 @@ function Dashboard() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         불량 관리 대시보드
                     </Typography>
-                    {/* 버튼을 페이지 이동 링크로 변경 */}
                     <Button color="inherit" startIcon={<AssessmentIcon />} component={RouterLink} to="/statistics">
                         통계 보기
                     </Button>
@@ -54,17 +56,17 @@ function Dashboard() {
                 </Toolbar>
             </AppBar>
             <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-                {loading ? (
+                {loading && inspections.length === 0 ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
                 ) : error ? (
-                    <Alert severity="error">{error}</Alert>
+                    <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
                 ) : (
                     <Grid container spacing={3}>
                         <Grid item xs={12}>
                             <StatsGrid data={inspections} />
                         </Grid>
                         <Grid item xs={12}>
-                            <InspectionForm />
+                            <InspectionForm onAddSuccess={fetchInspections} />
                         </Grid>
                         <Grid item xs={12}>
                             <InspectionList allInspections={inspections} />
