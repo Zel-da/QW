@@ -15,9 +15,11 @@ def get_inspections():
     cursor = conn.cursor()
     try:
         query = """
-            SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, 
-                   i.inspected_quantity, i.defective_quantity, i.actioned_quantity, i.defect_reason, 
-                   i.solution, i.received_date, i.target_date, i.progress_percentage
+            SELECT 
+                i.id, u.username, c.company_name, p.product_name, p.product_code, 
+                i.inspected_quantity, i.defective_quantity, i.actioned_quantity, i.defect_reason, 
+                i.solution, i.received_date, i.target_date, i.completion_date, i.progress_percentage,
+                i.status, i.image_path, i.excel_path
             FROM Inspections i
             JOIN Users u ON i.user_id = u.id
             JOIN Companies c ON i.company_id = c.id
