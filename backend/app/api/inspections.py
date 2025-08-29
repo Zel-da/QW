@@ -44,7 +44,8 @@ def add_inspection():
     data = request.get_json()
     data['user_id'] = g.current_user['user_id'] # Use user_id from token
 
-    required_fields = ['company_name', 'product_name', 'product_code', 'inspected_quantity', 'defective_quantity']
+    # Check for fields that are actually used in the INSERT query
+    required_fields = ['company_name', 'product_name', 'product_code']
     if not all(field in data and data[field] is not None for field in required_fields):
         return jsonify({"message": "필수 항목이 누락되었습니다."}), 400
 
