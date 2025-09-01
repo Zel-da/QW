@@ -1,0 +1,19 @@
+/* src/App.module.css */
+
+.appContainer {
+  display: flex;
+  height: 100%;
+}
+
+.mainContentContainer {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 스크롤 문제 해결을 위한 핵심 속성 */
+}

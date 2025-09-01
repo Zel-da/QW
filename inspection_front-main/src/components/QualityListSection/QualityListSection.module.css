@@ -1,0 +1,157 @@
+/* src/components/QualityListSection/QualityListSection.module.css */
+
+.listSection {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.sectionHeader h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+    flex-grow: 1;
+    justify-content: flex-start;
+}
+
+.filters select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.9rem;
+}
+
+.addButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.inspectionTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: fixed;
+}
+
+.inspectionTable th,
+.inspectionTable td {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inspectionTable th {
+    font-weight: bold;
+    background-color: #f8f8fa;
+    color: #333;
+}
+
+/* 컬럼 폭 조정 스타일 */
+.managerColumn {
+    width: 9%;
+}
+
+.companyColumn {
+    width: 11%;
+}
+
+.improvementItemColumn {
+    width: 42%;
+}
+
+.dateColumn {
+    width: 9%;
+}
+
+.progressColumn {
+    width: 12%;
+}
+
+.statusColumn {
+    width: 8%;
+}
+
+/* 개선항목은 줄바꿈 허용 */
+.inspectionTable td.improvementItem {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* 시작일(4번째)과 마감일(5번째) 컬럼 간격 줄이기 */
+.inspectionTable th:nth-child(4),
+.inspectionTable td:nth-child(4) {
+    padding-right: 2px;
+}
+
+.inspectionTable th:nth-child(5),
+.inspectionTable td:nth-child(5) {
+    padding-left: 2px;
+}
+
+.progressBarContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.progressBar {
+    height: 10px;
+    background-color: #a5d6a7;
+    border-radius: 5px;
+}
+
+.statusTag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #3d405b;
+}
+
+/* 색상 정의 */
+.delayed {
+    background-color: #ffab91;
+}
+
+.inProgress {
+    background-color: #ffe082;
+}
+
+.completed {
+    background-color: #a5d6a7;
+}
+
+.clickableRow:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}

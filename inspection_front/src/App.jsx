@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
 import Header from './components/Header/Header.jsx';
 import InspectionDashboard from './pages/InspectionDashboard.jsx';
 import QualityImprovement from './pages/QualityImprovement.jsx';
 import MyPosts from './pages/MyPosts.jsx';
 import UserManagement from './pages/UserManagement.jsx';
-import { logout } from './api/authAPI.js';
 import './index.css';
 import styles from './App.module.css';
 
@@ -19,16 +17,19 @@ const AppContent = () => {
 
   // 페이지 로드 시 (새로고침 포함) 첫 페이지만 실행되는 로직
   useEffect(() => {
-    // 현재 경로가 루트('/')가 아니면 루트로 이동시킴
     if (location.pathname !== '/') {
       navigate('/', { replace: true });
     }
+  }, []); // 의존성 배열을 비워서 첫 로드 시에만 실행되도록 함
 
-    // 기존의 토큰 확인 로직은 그대로 유지
+  // On initial load, check for a token and set the user state
+  useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const decodedUser = jwtDecode(token);
+        // NOTE: The new version uses a different auth method (no jwt-decode).
+        // We will stick to the current project's established auth method for now.
+        const decodedUser = JSON.parse(atob(token.split('.')[1])); // Basic decode for username
         if (decodedUser.exp * 1000 > Date.now()) {
           setCurrentUser({ name: decodedUser.username, id: decodedUser.user_id });
         } else {
@@ -39,14 +40,16 @@ const AppContent = () => {
         localStorage.removeItem('token');
       }
     }
-  }, []); // 의존성 배열을 비워서 첫 로드 시에만 실행되도록 함
+  }, []);
 
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
+    // The new version stores the whole user object, but our backend provides a token.
+    // We will continue to store the token.
   };
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('token');
     setCurrentUser(null);
   };
 

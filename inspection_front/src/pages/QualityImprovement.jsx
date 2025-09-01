@@ -3,7 +3,7 @@ import styles from './QualityImprovement.module.css';
 import qualityApi from '../api/qualityApi.js';
 import KpiPieChart from '../components/KpiPieChart.jsx';
 import AddQualityItemModal from '../components/AddQualityItemModal/AddQualityItemModal.jsx';
-import QualityImprovementDetailModal from '../components/QualityImprovementDetailModal/QualityImprovementDetailModal.jsx';
+import QualityDetailModal from '../components/QualityDetailModal/QualityDetailModal.jsx'; // Renamed from QualityImprovementDetailModal for consistency
 import { FaPlus } from 'react-icons/fa';
 
 // --- KPI Section --- //
@@ -11,9 +11,9 @@ function QualityKpiSection({ items }) {
     const kpiData = useMemo(() => {
         return items.reduce((acc, item) => {
             const status = item.status.toLowerCase();
-            if (status.includes('resolved')) acc.completed += 1;
+            if (status.includes('completed')) acc.completed += 1;
             else if (status.includes('progress')) acc.inProgress += 1;
-            else acc.delayed += 1; // Assuming others are delayed/open
+            else acc.delayed += 1;
             return acc;
         }, { completed: 0, inProgress: 0, delayed: 0 });
     }, [items]);
@@ -28,7 +28,7 @@ function QualityKpiSection({ items }) {
                     {total > 0 && <KpiPieChart kpiData={kpiData} />}
                 </div>
                 <div className={styles.kpiCardsContainer}>
-                    <div className={`${styles.kpiCard} ${styles.delayed}`}><span className={styles.kpiValue}>{kpiData.delayed}</span><p className={styles.kpiLabel}>검토/지연</p></div>
+                    <div className={`${styles.kpiCard} ${styles.delayed}`}><span className={styles.kpiValue}>{kpiData.delayed}</span><p className={styles.kpiLabel}>지연</p></div>
                     <div className={`${styles.kpiCard} ${styles.inProgress}`}><span className={styles.kpiValue}>{kpiData.inProgress}</span><p className={styles.kpiLabel}>진행 중</p></div>
                     <div className={`${styles.kpiCard} ${styles.completed}`}><span className={styles.kpiValue}>{kpiData.completed}</span><p className={styles.kpiLabel}>완료</p></div>
                     <div className={`${styles.kpiCard} ${styles.total}`}><span className={styles.kpiValue}>{total}</span><p className={styles.kpiLabel}>전체 항목</p></div>
@@ -47,6 +47,12 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
         setIsModalOpen(true); 
     };
 
+    const statusMap = {
+        inProgress: { text: '진행중', className: styles.inProgress },
+        completed: { text: '완료', className: styles.completed },
+        delayed: { text: '지연', className: styles.delayed },
+    };
+
     return (
         <>
             <section className={styles.listSection}>
@@ -57,19 +63,29 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                 <table className={styles.inspectionTable}>
                     <thead>
                         <tr>
-                            <th>작성자</th><th>제목</th><th>분류</th><th>상태</th><th>생성일</th>
+                            <th>담당자</th><th>업체명</th><th>개선항목</th><th>시작일</th><th>마감일</th><th>진행률</th><th>상태</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {items.map((item) => (
-                            <tr key={item.id} onClick={() => onRowClick(item.id)} className={styles.clickableRow}>
-                                <td>{item.username}</td>
-                                <td>{item.title}</td>
-                                <td>{item.category}</td>
-                                <td><span className={`${styles.statusTag} ${styles[item.status.toLowerCase().replace(' ', '-')]}`}>{item.status}</span></td>
-                                <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
+                        {items.map((item) => {
+                            const statusInfo = statusMap[item.status] || {};
+                            return (
+                                <tr key={item.id} onClick={() => onRowClick(item.id)} className={styles.clickableRow}>
+                                    <td>{item.username}</td>
+                                    <td>{item.company_name}</td>
+                                    <td className={styles.improvementItem}>{item.item_description}</td>
+                                    <td>{new Date(item.start_date).toLocaleDateString()}</td>
+                                    <td>{item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}</td>
+                                    <td>
+                                        <div className={styles.progressBarContainer}>
+                                            <div className={styles.progressBar} style={{ width: `${item.progress}%` }}></div>
+                                            <span>{item.progress}%</span>
+                                        </div>
+                                    </td>
+                                    <td><span className={`${styles.statusTag} ${statusInfo.className}`}>{statusInfo.text}</span></td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </section>
@@ -126,7 +142,7 @@ function QualityImprovement({ user }) {
                 <QualityListSection user={user} items={allItems} onRowClick={handleRowClick} onAddSuccess={fetchData} />
             </div>
             {isDetailModalOpen && (
-                <QualityImprovementDetailModal item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />
+                <QualityDetailModal item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />
             )}
         </>
     );

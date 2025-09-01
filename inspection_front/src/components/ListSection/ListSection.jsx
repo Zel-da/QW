@@ -3,7 +3,7 @@ import { getInspections, getInspectionById } from '../../api/inspectionAPI.js';
 import styles from './ListSection.module.css';
 import { FaPlus } from 'react-icons/fa';
 import AddInspectionModal from '../AddInspectionModal/AddInspectionModal.jsx';
-import InspectionDetailModal from '../InspectionDetailModal/InspectionDetailModal.jsx'; // 상세 모달 임포트
+import InspectionDetailModal from '../InspectionDetailModal/InspectionDetailModal.jsx';
 
 function ListSection({ user }) {
     const [allInspections, setAllInspections] = useState([]);
@@ -18,10 +18,9 @@ function ListSection({ user }) {
         usernames: [],
         company_names: [],
         product_names: [],
-        statuses: ['all', 'inProgress', 'delayed', 'completed'],
+        statuses: ['all', 'inProgress', 'completed', 'delayed'],
     });
 
-    // --- Modal States ---
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedInspection, setSelectedInspection] = useState(null);
@@ -73,32 +72,18 @@ function ListSection({ user }) {
         }
     }, [user]);
 
-    const getStatus = (item) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const targetDate = new Date(item.target_date);
-        if (item.progress_percentage === 100) return 'completed';
-        if (targetDate < today) return 'delayed';
-        return 'inProgress';
-    };
-
     useEffect(() => {
         let result = allInspections;
         if (filters.username !== 'all') result = result.filter(item => item.username === filters.username);
         if (filters.company_name !== 'all') result = result.filter(item => item.company_name === filters.company_name);
         if (filters.product_name !== 'all') result = result.filter(item => item.product_name === filters.product_name);
-        if (filters.status !== 'all') result = result.filter(item => getStatus(item) === filters.status);
+        if (filters.status !== 'all') result = result.filter(item => item.status === filters.status); // Simplified status filter
         setFilteredInspections(result);
     }, [filters, allInspections]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        return dateString.replaceAll('-', '.');
     };
 
     const statusMap = {
@@ -113,7 +98,6 @@ function ListSection({ user }) {
                 <div className={styles.sectionHeader}>
                     <h2>상세 목록</h2>
                     <div className={styles.filters}>
-                        {/* Filter selects */}
                         <select name="username" value={filters.username} onChange={handleFilterChange}>{filterOptions.usernames.map(o => (<option key={o} value={o}>{o === 'all' ? '담당자 전체' : o}</option>))}</select>
                         <select name="company_name" value={filters.company_name} onChange={handleFilterChange}>{filterOptions.company_names.map(o => (<option key={o} value={o}>{o === 'all' ? '업체 전체' : o}</option>))}</select>
                         <select name="product_name" value={filters.product_name} onChange={handleFilterChange}>{filterOptions.product_names.map(o => (<option key={o} value={o}>{o === 'all' ? '제품 전체' : o}</option>))}</select>
@@ -132,7 +116,7 @@ function ListSection({ user }) {
                     </thead>
                     <tbody>
                         {filteredInspections.map((item) => {
-                            const statusInfo = statusMap[getStatus(item)] || {};
+                            const statusInfo = statusMap[item.status] || {};
                             return (
                                 <tr key={item.id} onClick={() => handleRowClick(item.id)} className={styles.clickableRow}>
                                     <td>{item.username}</td>
@@ -141,7 +125,7 @@ function ListSection({ user }) {
                                     <td>{`${item.defective_quantity} / ${item.inspected_quantity}`}</td>
                                     <td className={styles.truncate}>{item.defect_reason}</td>
                                     <td className={styles.truncate}>{item.solution}</td>
-                                    <td>{formatDate(item.target_date)}</td>
+                                    <td>{item.target_date ? new Date(item.target_date).toLocaleDateString() : '-'}</td>
                                     <td>
                                         <div className={styles.progressBarContainer}>
                                             <div className={styles.progressBar} style={{ width: `${item.progress_percentage}%` }}></div>

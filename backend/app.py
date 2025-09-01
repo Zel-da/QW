@@ -105,13 +105,13 @@ def get_inspections(current_user):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
                 SELECT i.id, u.username, c.company_name, p.product_name, p.product_code,
-                       i.inspected_quantity, i.defective_quantity, i.actioned_quantity,
-                       i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
+                       i.inspected_quantity, i.defective_quantity, i.status,
+                       i.defect_reason, i.solution, i.target_date, i.progress_percentage, i.created_at
                 FROM Inspections i
                 JOIN Users u ON i.user_id = u.id
                 JOIN Companies c ON i.company_id = c.id
                 JOIN Products p ON i.product_id = p.id
-                ORDER BY i.received_date DESC;
+                ORDER BY i.created_at DESC;
             """
             cursor.execute(query)
             inspections = cursor.fetchall()
@@ -130,14 +130,14 @@ def get_my_inspections(current_user):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
                 SELECT i.id, u.username, c.company_name, p.product_name, p.product_code,
-                       i.inspected_quantity, i.defective_quantity, i.actioned_quantity,
-                       i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
+                       i.inspected_quantity, i.defective_quantity, i.status,
+                       i.defect_reason, i.solution, i.target_date, i.progress_percentage, i.created_at
                 FROM Inspections i
                 JOIN Users u ON i.user_id = u.id
                 JOIN Companies c ON i.company_id = c.id
                 JOIN Products p ON i.product_id = p.id
                 WHERE i.user_id = %s
-                ORDER BY i.received_date DESC;
+                ORDER BY i.created_at DESC;
             """
             cursor.execute(query, (current_user['id'],))
             inspections = cursor.fetchall()
@@ -180,12 +180,12 @@ def add_inspection(current_user):
             params = (
                 company_id, product_id, current_user['id'],
                 data.get('inspected_quantity'), data.get('defective_quantity'),
-                data.get('actioned_quantity'), data.get('defect_reason'),
-                data.get('solution'), data.get('target_date'),
-                data.get('progress_percentage', 0)
+                data.get('defect_reason'), data.get('solution'), 
+                data.get('target_date'), data.get('progress_percentage', 0),
+                data.get('status', 'inProgress')
             )
             insert_query = """
-                INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity, defect_reason, solution, target_date, progress_percentage)
+                INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, defect_reason, solution, target_date, progress_percentage, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, params)
@@ -206,9 +206,7 @@ def get_inspection_detail(current_user, id):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code,
-                       i.inspected_quantity, i.defective_quantity, i.actioned_quantity,
-                       i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
+                SELECT i.*, u.username, c.company_name, p.product_name, p.product_code
                 FROM Inspections i
                 JOIN Users u ON i.user_id = u.id
                 JOIN Companies c ON i.company_id = c.id
@@ -241,8 +239,10 @@ def update_inspection(current_user, id):
             if inspection['user_id'] != current_user['id']:
                 return jsonify({"message": "Permission denied"}), 403
 
-            update_fields = ['inspected_quantity', 'defective_quantity', 'actioned_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage']
+            update_fields = ['inspected_quantity', 'defective_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage', 'status']
             set_clause = ", ".join([f"{field} = %s" for field in update_fields])
+            # Add updated_at field
+            set_clause += ", updated_at = NOW()"
             params = [data.get(field) for field in update_fields]
             params.append(id)
             
@@ -320,9 +320,10 @@ def get_quality_improvements(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT q.id, u.username, q.title, q.category, q.status, q.created_at
-                FROM QualityImprovement q
+                SELECT q.id, u.username, c.company_name, q.item_description, q.status, q.start_date, q.end_date, q.progress
+                FROM QualityImprovements q
                 JOIN Users u ON q.user_id = u.id
+                JOIN Companies c ON q.company_id = c.id
                 ORDER BY q.created_at DESC;
             """
             cursor.execute(query)
@@ -341,16 +342,28 @@ def add_quality_improvement(current_user):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
         with conn.cursor() as cursor:
+            # Get company_id
+            company_name = data['company_name']
+            cursor.execute("SELECT id FROM Companies WHERE company_name = %s", (company_name,))
+            company = cursor.fetchone()
+            if company:
+                company_id = company[0]
+            else:
+                cursor.execute("INSERT INTO Companies (company_name) VALUES (%s) RETURNING id", (company_name,))
+                company_id = cursor.fetchone()[0]
+
             query = """
-                INSERT INTO QualityImprovement (user_id, title, description, category, status)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO QualityImprovements (user_id, company_id, item_description, start_date, end_date, progress, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             params = (
                 current_user['id'],
-                data.get('title'),
-                data.get('description'),
-                data.get('category'),
-                data.get('status', 'Open')
+                company_id,
+                data.get('item_description'),
+                data.get('start_date'),
+                data.get('end_date'),
+                data.get('progress', 0),
+                data.get('status', 'inProgress')
             )
             cursor.execute(query, params)
             conn.commit()
@@ -369,9 +382,10 @@ def get_quality_improvement_detail(current_user, id):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT q.*, u.username
-                FROM QualityImprovement q
+                SELECT q.*, u.username, c.company_name
+                FROM QualityImprovements q
                 JOIN Users u ON q.user_id = u.id
+                JOIN Companies c ON q.company_id = c.id
                 WHERE q.id = %s;
             """
             cursor.execute(query, (id,))
@@ -392,7 +406,7 @@ def update_quality_improvement(current_user, id):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute("SELECT user_id FROM QualityImprovement WHERE id = %s", (id,))
+            cursor.execute("SELECT user_id FROM QualityImprovements WHERE id = %s", (id,))
             item = cursor.fetchone()
             if not item:
                 return jsonify({"message": "Item not found"}), 404
@@ -400,14 +414,15 @@ def update_quality_improvement(current_user, id):
                 return jsonify({"message": "Permission denied"}), 403
 
             query = """
-                UPDATE QualityImprovement
-                SET title = %s, description = %s, category = %s, status = %s
+                UPDATE QualityImprovements
+                SET item_description = %s, start_date = %s, end_date = %s, progress = %s, status = %s, updated_at = NOW()
                 WHERE id = %s
             """
             params = (
-                data.get('title'),
-                data.get('description'),
-                data.get('category'),
+                data.get('item_description'),
+                data.get('start_date'),
+                data.get('end_date'),
+                data.get('progress'),
                 data.get('status'),
                 id
             )
@@ -427,15 +442,16 @@ def delete_quality_improvement(current_user, id):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute("SELECT user_id FROM QualityImprovement WHERE id = %s", (id,))
+            cursor.execute("SELECT user_id FROM QualityImprovements WHERE id = %s", (id,))
             item = cursor.fetchone()
             if not item:
                 return jsonify({"message": "Item not found"}), 404
             if item['user_id'] != current_user['id']:
                 return jsonify({"message": "Permission denied"}), 403
             
-            cursor.execute("DELETE FROM Comments WHERE quality_item_id = %s", (id,))
-            cursor.execute("DELETE FROM QualityImprovement WHERE id = %s", (id,))
+            cursor.execute("DELETE FROM Comments WHERE parent_id = %s AND parent_type = 'quality'", (id,))
+            cursor.execute("DELETE FROM Histories WHERE parent_id = %s AND parent_type = 'quality'", (id,))
+            cursor.execute("DELETE FROM QualityImprovements WHERE id = %s", (id,))
             conn.commit()
             return jsonify({"message": "Quality improvement item deleted successfully"})
     except Exception as e:
@@ -452,9 +468,10 @@ def get_my_quality_improvements(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT q.id, u.username, q.title, q.category, q.status, q.created_at
-                FROM QualityImprovement q
+                SELECT q.id, u.username, c.company_name, q.item_description, q.status, q.start_date, q.end_date, q.progress
+                FROM QualityImprovements q
                 JOIN Users u ON q.user_id = u.id
+                JOIN Companies c ON q.company_id = c.id
                 WHERE q.user_id = %s
                 ORDER BY q.created_at DESC;
             """
