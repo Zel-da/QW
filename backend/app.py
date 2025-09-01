@@ -167,6 +167,7 @@ def add_inspection(current_user):
             return jsonify({"message": "검수 데이터가 성공적으로 추가되었습니다."}), 201
     except Exception as e:
         conn.rollback()
+        print(f"Error in add_inspection: {e}", flush=True) # Detailed error logging
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         if conn: conn.close()
