@@ -8,6 +8,7 @@ import QualityImprovement from './pages/QualityImprovement.jsx';
 import './index.css';
 import styles from './App.module.css';
 import MyPosts from './pages/MyPosts.jsx';
+import UserManagement from './pages/UserManagement.jsx'; // 사용자 관리 페이지 import
 import { logout } from './api/authAPI.js';
 
 const App = () => {
@@ -59,6 +60,10 @@ const App = () => {
               <Route path="/" element={<InspectionDashboard user={currentUser} />} />
               <Route path="/quality" element={<QualityImprovement user={currentUser} />} />
               <Route path="/my-posts" element={<MyPosts user={currentUser} />} />
+              {/* 관리자 전용 라우트 추가 */}
+              {currentUser && currentUser.name === 'test' && (
+                <Route path="/user-management" element={<UserManagement />} />
+              )}
             </Routes>
           </div>
         </main>

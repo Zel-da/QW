@@ -466,6 +466,98 @@ def get_my_quality_improvements(current_user):
     finally:
         if conn: conn.close()
 
+# == User Management Endpoints (Admin Only) ==
+
+def is_admin(current_user):
+    return current_user['username'] == 'test'
+
+@app.route('/api/users', methods=['GET'])
+@token_required
+def get_all_users(current_user):
+    if not is_admin(current_user):
+        return jsonify({"message": "Permission denied"}), 403
+    
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT id, username, last_login FROM Users ORDER BY id")
+            users = cursor.fetchall()
+            return jsonify(users)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/users', methods=['POST'])
+@token_required
+def create_user(current_user):
+    if not is_admin(current_user):
+        return jsonify({"message": "Permission denied"}), 403
+        
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"message": "Username and password are required"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT id FROM Users WHERE username = %s", (username,))
+            if cursor.fetchone():
+                return jsonify({"message": "Username already exists"}), 409 # 409 Conflict
+
+            password_hash = sha256.hash(password)
+            cursor.execute("INSERT INTO Users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
+            conn.commit()
+            return jsonify({"message": "User created successfully"}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/users/<int:id>', methods=['DELETE'])
+@token_required
+def delete_user(current_user, id):
+    if not is_admin(current_user):
+        return jsonify({"message": "Permission denied"}), 403
+
+    # Prevent admin from deleting themselves
+    if current_user['id'] == id:
+        return jsonify({"message": "Cannot delete your own account"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor() as cursor:
+            # Check if user exists before deleting
+            cursor.execute("SELECT id FROM Users WHERE id = %s", (id,))
+            if not cursor.fetchone():
+                return jsonify({"message": "User not found"}), 404
+
+            # Prevent deleting users with existing posts
+            cursor.execute("SELECT id FROM Inspections WHERE user_id = %s LIMIT 1", (id,))
+            if cursor.fetchone():
+                return jsonify({"message": "Cannot delete user with existing inspection posts."}), 409
+            
+            cursor.execute("SELECT id FROM QualityImprovement WHERE user_id = %s LIMIT 1", (id,))
+            if cursor.fetchone():
+                return jsonify({"message": "Cannot delete user with existing quality improvement posts."}), 409
+
+            cursor.execute("DELETE FROM Users WHERE id = %s", (id,))
+            conn.commit()
+            return jsonify({"message": "User deleted successfully"})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 # == Serve React App ==
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

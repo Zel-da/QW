@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaClipboardList, FaChartLine, FaUserEdit } from 'react-icons/fa'; // FaUserEdit 아이콘 추가
+import { FaClipboardList, FaChartLine, FaUserEdit, FaUsersCog } from 'react-icons/fa'; // FaUsersCog 아이콘 추가
 import styles from './Sidebar.module.css';
 
 function Sidebar({ user }) { // user prop을 받도록 수정
@@ -23,6 +23,13 @@ function Sidebar({ user }) { // user prop을 받도록 수정
         {user && (
           <li className={`${styles.navItem} ${location.pathname === '/my-posts' ? styles.active : ''}`}>
             <Link to="/my-posts"><FaUserEdit /><span>작성내역</span></Link>
+          </li>
+        )}
+
+        {/* 'test' 사용자로 로그인했을 때만 사용자 관리 메뉴를 표시 */}
+        {user && user.name === 'test' && (
+          <li className={`${styles.navItem} ${location.pathname === '/user-management' ? styles.active : ''}`}>
+            <Link to="/user-management"><FaUsersCog /><span>사용자 관리</span></Link>
           </li>
         )}
       </ul>
