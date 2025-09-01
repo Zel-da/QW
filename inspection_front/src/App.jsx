@@ -15,12 +15,7 @@ const AppContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 페이지 로드 시 (새로고침 포함) 첫 페이지만 실행되는 로직
-  useEffect(() => {
-    if (location.pathname !== '/') {
-      navigate('/', { replace: true });
-    }
-  }, []); // 의존성 배열을 비워서 첫 로드 시에만 실행되도록 함
+  
 
   // On initial load, check for a token and set the user state
   useEffect(() => {

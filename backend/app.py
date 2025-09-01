@@ -562,7 +562,7 @@ def delete_user(current_user, id):
             if cursor.fetchone():
                 return jsonify({"message": "Cannot delete user with existing inspection posts."}), 409
             
-            cursor.execute("SELECT id FROM QualityImprovement WHERE user_id = %s LIMIT 1", (id,))
+            cursor.execute("SELECT id FROM QualityImprovements WHERE user_id = %s LIMIT 1", (id,))
             if cursor.fetchone():
                 return jsonify({"message": "Cannot delete user with existing quality improvement posts."}), 409
 
