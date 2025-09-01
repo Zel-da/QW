@@ -16,6 +16,20 @@ export const addInspection = async (inspectionData) => {
 };
 
 /**
+ * Fetches all inspections.
+ * @returns {Promise<Array>} A promise that resolves to an array of all inspections.
+ */
+export const getInspections = async () => {
+  try {
+    const response = await api.get('/inspections');
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch all inspections:", error);
+    throw new Error(error.response?.data?.message || '전체 검수 내역을 불러오는 데 실패했습니다.');
+  }
+};
+
+/**
  * Fetches inspections created by the currently logged-in user.
  * @returns {Promise<Array>} A promise that resolves to an array of inspections.
  */
