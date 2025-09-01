@@ -7,10 +7,10 @@ import QualityDetailModal from '../components/QualityDetailModal/QualityImprovem
 import { FaPlus } from 'react-icons/fa';
 
 // --- KPI Section --- //
-function QualityKpiSection({ items }) {
+function QualityKpiSection({ items, onKpiClick }) { // onKpiClick prop 추가
     const kpiData = useMemo(() => {
         return items.reduce((acc, item) => {
-            const status = item.status.toLowerCase();
+            const status = item.status ? item.status.toLowerCase() : 'inprogress';
             if (status.includes('completed')) acc.completed += 1;
             else if (status.includes('progress')) acc.inProgress += 1;
             else acc.delayed += 1;
@@ -25,13 +25,26 @@ function QualityKpiSection({ items }) {
             <div className={styles.sectionHeader}><h2>주요 지표</h2></div>
             <div className={styles.kpiContentWrapper}>
                 <div className={styles.kpiChartContainer}>
-                    {total > 0 && <KpiPieChart kpiData={kpiData} />}
+                    {total > 0 && <KpiPieChart kpiData={{...kpiData, total}} />}
                 </div>
                 <div className={styles.kpiCardsContainer}>
-                    <div className={`${styles.kpiCard} ${styles.total}`}><span className={styles.kpiValue}>{total}</span><p className={styles.kpiLabel}>전체 항목</p></div>
-                    <div className={`${styles.kpiCard} ${styles.inProgress}`}><span className={styles.kpiValue}>{kpiData.inProgress}</span><p className={styles.kpiLabel}>진행 중</p></div>
-                    <div className={`${styles.kpiCard} ${styles.completed}`}><span className={styles.kpiValue}>{kpiData.completed}</span><p className={styles.kpiLabel}>완료</p></div>
-                    <div className={`${styles.kpiCard} ${styles.delayed}`}><span className={styles.kpiValue}>{kpiData.delayed}</span><p className={styles.kpiLabel}>지연</p></div>
+                    {/* 순서 변경 및 onClick 핸들러 추가 */}
+                    <div className={`${styles.kpiCard} ${styles.total}`} onClick={() => onKpiClick('all')}>
+                        <span className={styles.kpiValue}>{total}</span>
+                        <p className={styles.kpiLabel}>전체 항목</p>
+                    </div>
+                    <div className={`${styles.kpiCard} ${styles.inProgress}`} onClick={() => onKpiClick('inProgress')}>
+                        <span className={styles.kpiValue}>{kpiData.inProgress}</span>
+                        <p className={styles.kpiLabel}>진행 중</p>
+                    </div>
+                    <div className={`${styles.kpiCard} ${styles.delayed}`} onClick={() => onKpiClick('delayed')}>
+                        <span className={styles.kpiValue}>{kpiData.delayed}</span>
+                        <p className={styles.kpiLabel}>지연</p>
+                    </div>
+                    <div className={`${styles.kpiCard} ${styles.completed}`} onClick={() => onKpiClick('completed')}>
+                        <span className={styles.kpiValue}>{kpiData.completed}</span>
+                        <p className={styles.kpiLabel}>완료</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -101,6 +114,7 @@ function QualityImprovement({ user }) {
     const [error, setError] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [statusFilter, setStatusFilter] = useState('all'); // 필터 상태 추가
 
     const fetchData = async () => {
         try {
@@ -118,11 +132,14 @@ function QualityImprovement({ user }) {
         if (user) {
             fetchData();
         } else {
-            // 로그인하지 않은 경우, 로딩을 멈추고 데이터를 비웁니다.
             setIsLoading(false);
             setAllItems([]);
         }
-    }, [user]); // user 상태가 변경될 때마다 이 로직이 다시 실행됩니다.
+    }, [user]);
+
+    const handleKpiClick = (status) => {
+        setStatusFilter(status);
+    };
 
     const handleRowClick = async (id) => {
         try {
@@ -134,6 +151,14 @@ function QualityImprovement({ user }) {
         }
     };
 
+    const filteredByKpi = useMemo(() => {
+        if (statusFilter === 'all') {
+            return allItems;
+        }
+        // status 필드가 없는 경우를 대비하여 안전 장치 추가
+        return allItems.filter(item => (item.status || 'inProgress') === statusFilter);
+    }, [statusFilter, allItems]);
+
     if (isLoading) return <div>로딩 중...</div>;
     if (error) return <div>오류: {error}</div>;
 
@@ -144,8 +169,8 @@ function QualityImprovement({ user }) {
                 <p className={styles.contentSubTitle}>업체별 품질 개선 진행도를 확인하세요.</p>
             </div>
             <div className={styles.scrollableContent}>
-                <QualityKpiSection items={allItems} />
-                <QualityListSection user={user} items={allItems} onRowClick={handleRowClick} onAddSuccess={fetchData} />
+                <QualityKpiSection items={allItems} onKpiClick={handleKpiClick} />
+                <QualityListSection user={user} items={filteredByKpi} onRowClick={handleRowClick} onAddSuccess={fetchData} />
             </div>
             {isDetailModalOpen && (
                 <QualityDetailModal item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />

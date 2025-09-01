@@ -18,7 +18,7 @@ const QualityImprovementDetailModal = ({ item, onClose }) => {
         </div>
         <div className={styles.content}>
           <div className={styles.grid}>
-            <div className={styles.gridItem}><strong>ID:</strong> {item.id}</div>
+            
             <div className={styles.gridItem}><strong>작성자:</strong> {item.username}</div>
             <div className={styles.gridItem}><strong>분류:</strong> {item.category || '-'}</div>
             <div className={styles.gridItem}><strong>상태:</strong> {item.status}</div>

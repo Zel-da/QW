@@ -1,55 +1,49 @@
-// src/components/KpiSection.jsx
+import React, { useMemo } from 'react';
+import KpiPieChart from '../KpiPieChart.jsx';
+import styles from './KpiSection.module.css';
 
-import React, { useState, useEffect } from 'react';
-import KpiPieChart from '../KpiPieChart'; // KpiPieChart는 CSS 모듈화가 필요 없습니다.
-import { getKpiSummary } from '../../api/inspectionAPI.js';
-import styles from './KpiSection.module.css'; // 1. KpiSection 전용 CSS 모듈을 import 합니다.
+function KpiSection({ inspections, onKpiClick }) {
+    const kpiData = useMemo(() => {
+        return inspections.reduce((acc, item) => {
+            const status = item.status || 'inProgress'; // Default status if undefined
+            if (status === 'completed') {
+                acc.completed += 1;
+            } else if (status === 'inProgress') {
+                acc.inProgress += 1;
+            } else if (status === 'delayed') {
+                acc.delayed += 1;
+            }
+            return acc;
+        }, { completed: 0, inProgress: 0, delayed: 0 });
+    }, [inspections]);
 
-function KpiSection() {
-    const [kpiData, setKpiData] = useState({
-        delayed: 0,
-        inProgress: 0,
-        completed: 0,
-        total: 0,
-    });
-
-    useEffect(() => {
-        const fetchKpiData = async () => {
-            const summaryData = await getKpiSummary();
-            setKpiData(summaryData);
-        };
-        fetchKpiData();
-    }, []);
+    const total = inspections.length;
 
     return (
-        // 2. 모든 className을 styles 객체를 사용하도록 변경합니다.
         <section className={styles.kpiSection}>
             <div className={styles.sectionHeader}>
                 <h2>주요 지표</h2>
-                
             </div>
-
             <div className={styles.kpiContentWrapper}>
                 <div className={styles.kpiChartContainer}>
-                    {kpiData.total > 0 && <KpiPieChart kpiData={kpiData} />}
+                    {total > 0 && <KpiPieChart kpiData={{...kpiData, total}} />}
                 </div>
                 <div className={styles.kpiCardsContainer}>
-                    {/* 3. 두 개 이상의 클래스를 적용할 땐 템플릿 리터럴(``)을 사용합니다. */}
-                    <div className={`${styles.kpiCard} ${styles.delayed}`}>
-                        <span className={styles.kpiValue}>{kpiData.delayed}</span>
-                        <p className={styles.kpiLabel}>지연 항목</p>
+                    <div className={`${styles.kpiCard} ${styles.total}`} onClick={() => onKpiClick('all')}>
+                        <span className={styles.kpiValue}>{total}</span>
+                        <p className={styles.kpiLabel}>전체 항목</p>
                     </div>
-                    <div className={`${styles.kpiCard} ${styles.inProgress}`}>
+                    <div className={`${styles.kpiCard} ${styles.inProgress}`} onClick={() => onKpiClick('inProgress')}>
                         <span className={styles.kpiValue}>{kpiData.inProgress}</span>
                         <p className={styles.kpiLabel}>진행 중</p>
                     </div>
-                    <div className={`${styles.kpiCard} ${styles.completed}`}>
+                    <div className={`${styles.kpiCard} ${styles.delayed}`} onClick={() => onKpiClick('delayed')}>
+                        <span className={styles.kpiValue}>{kpiData.delayed}</span>
+                        <p className={styles.kpiLabel}>지연</p>
+                    </div>
+                    <div className={`${styles.kpiCard} ${styles.completed}`} onClick={() => onKpiClick('completed')}>
                         <span className={styles.kpiValue}>{kpiData.completed}</span>
                         <p className={styles.kpiLabel}>완료</p>
-                    </div>
-                    <div className={`${styles.kpiCard} ${styles.total}`}>
-                        <span className={styles.kpiValue}>{kpiData.total}</span>
-                        <p className={styles.kpiLabel}>전체 항목</p>
                     </div>
                 </div>
             </div>

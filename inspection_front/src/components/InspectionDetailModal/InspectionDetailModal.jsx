@@ -18,7 +18,7 @@ const InspectionDetailModal = ({ item, onClose }) => {
         </div>
         <div className={styles.content}>
           <div className={styles.grid}>
-            <div className={styles.gridItem}><strong>ID:</strong> {item.id}</div>
+            
             <div className={styles.gridItem}><strong>작성자:</strong> {item.username}</div>
             <div className={styles.gridItem}><strong>업체명:</strong> {item.company_name}</div>
             <div className={styles.gridItem}><strong>품명:</strong> {item.product_name}</div>
