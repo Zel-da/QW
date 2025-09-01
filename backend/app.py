@@ -106,8 +106,8 @@ def login():
 
 # == Other Endpoints (Protected) ==
 @app.route('/inspections', methods=['GET'])
-@token_required
-def get_inspections(current_user):
+#@token_required
+def get_inspections(): #current_user
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
