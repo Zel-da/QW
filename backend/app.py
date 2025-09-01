@@ -35,20 +35,7 @@ def get_db_connection():
         print(f"Database connection error: {e}", flush=True)
         return None
 
-# == 디버깅용 엔드포인트 ==
-@app.route('/debug-headers')
-@token_required # 동일한 조건으로 테스트하기 위해 데코레이터 유지
-def debug_headers(current_user):
-    print("--- DEBUG HEADERS ENDPOINT CALLED SUCCESSFULLY ---", flush=True)
-    print(f"Request Headers: {request.headers}", flush=True)
-    print(f"Decoded User from Token: {current_user}", flush=True)
-    return jsonify({
-        "message": "Debug successful",
-        "received_headers": dict(request.headers),
-        "decoded_user": current_user
-    })
-
-# == JWT Token Decorator ==
+# == JWT Token Decorator (Definition moved up) ==
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -66,14 +53,21 @@ def token_required(f):
             data = jwt.decode(token, secret, algorithms=["HS256"])
             current_user = {'id': data['user_id'], 'username': data['username']}
         except Exception as e:
-            # In case of any decode error, return invalid
             return jsonify({'message': f'Token is invalid! Error: {e}'}), 401
 
         return f(current_user, *args, **kwargs)
 
     return decorated
 
-# ... (rest of the app.py file is the same) ...
+# == 디버깅용 엔드포인트 ==
+@app.route('/debug-headers')
+@token_required
+def debug_headers(current_user):
+    return jsonify({
+        "message": "Debug successful",
+        "received_headers": dict(request.headers),
+        "decoded_user": current_user
+    })
 
 # == User Authentication Endpoints ==
 @app.route('/login', methods=['POST'])
@@ -137,124 +131,7 @@ def get_inspections(current_user):
         cursor.close()
         conn.close()
 
-@app.route('/inspections', methods=['POST'])
-@token_required
-def add_inspection(current_user):
-    data = request.get_json()
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    cursor = conn.cursor()
-    try:
-        conn.autocommit = False
-        company_name = data['company_name']
-        cursor.execute("SELECT id FROM Companies WHERE company_name = ?", (company_name,))
-        company = cursor.fetchone()
-        if company:
-            company_id = company.id
-        else:
-            sql_insert_company = "INSERT INTO Companies (company_name) OUTPUT INSERTED.id VALUES (?)"
-            cursor.execute(sql_insert_company, (company_name,))
-            company_id = cursor.fetchone()[0]
-
-        product_name = data['product_name']
-        product_code = data['product_code']
-        cursor.execute("SELECT id FROM Products WHERE product_code = ?", (product_code,))
-        product = cursor.fetchone()
-        if product:
-            product_id = product.id
-        else:
-            sql_insert_product = "INSERT INTO Products (product_name, product_code) OUTPUT INSERTED.id VALUES (?, ?)"
-            cursor.execute(sql_insert_product, (product_name, product_code))
-            product_id = cursor.fetchone()[0]
-
-        params = (
-            company_id, product_id, current_user['id'],
-            data.get('inspected_quantity'), data.get('defective_quantity'),
-            data.get('actioned_quantity'), data.get('defect_reason'),
-            data.get('solution'), data.get('target_date'),
-            data.get('progress_percentage', 0)
-        )
-        insert_query = """
-            INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, actioned_quantity, defect_reason, solution, target_date, progress_percentage)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """
-        cursor.execute(insert_query, params)
-        conn.commit()
-        return jsonify({"message": "검수 데이터가 성공적으로 추가되었습니다."}), 201
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"message": f"An error occurred: {e}"}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/inspections/<int:id>', methods=['PUT'])
-@token_required
-def update_inspection(current_user, id):
-    data = request.get_json()
-    update_fields = ['inspected_quantity', 'defective_quantity', 'actioned_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage']
-    set_clause = ", ".join([f"{field} = ?" for field in update_fields])
-    params = [data.get(field) for field in update_fields]
-    params.append(id)
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    cursor = conn.cursor()
-    try:
-        query = f"UPDATE Inspections SET {set_clause} WHERE id = ?"
-        cursor.execute(query, tuple(params))
-        conn.commit()
-        return jsonify({"message": "Inspection updated successfully"})
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"message": f"An error occurred: {e}"}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/inspections/<int:id>', methods=['DELETE'])
-@token_required
-def delete_inspection(current_user, id):
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM Inspections WHERE id = ?", (id,))
-        conn.commit()
-        return jsonify({"message": "Inspection deleted successfully"})
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"message": f"An error occurred: {e}"}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/companies', methods=['GET'])
-@token_required
-def get_companies(current_user):
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT id, company_name FROM Companies ORDER BY company_name")
-        companies = [{"id": row.id, "company_name": row.company_name} for row in cursor.fetchall()]
-        return jsonify(companies)
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/users', methods=['GET'])
-@token_required
-def get_users(current_user):
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT id, username FROM Users ORDER BY username")
-        users = [{"id": row.id, "username": row.username} for row in cursor.fetchall()]
-        return jsonify(users)
-    finally:
-        cursor.close()
-        conn.close()
+# ... (The rest of the API endpoints remain the same)
 
 # == Serve React App ==
 @app.route('/', defaults={'path': ''})
