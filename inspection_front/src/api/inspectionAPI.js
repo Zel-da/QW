@@ -1,21 +1,45 @@
 import api from '../api';
 
-export const getInspections = async () => {
-    const response = await api.get('/inspections');
+/**
+ * Fetches inspections created by the currently logged-in user.
+ * @returns {Promise<Array>} A promise that resolves to an array of inspections.
+ */
+export const getMyInspections = async () => {
+  try {
+    const response = await api.get('/my-inspections');
     return response.data;
+  } catch (error) {
+    console.error("Failed to fetch my inspections:", error);
+    throw new Error(error.response?.data?.message || '작성 내역을 불러오는 데 실패했습니다.');
+  }
 };
 
-export const addInspection = async (inspectionData) => {
-    const response = await api.post('/inspections', inspectionData);
+/**
+ * Fetches a single inspection by its ID.
+ * @param {number} id The ID of the inspection to fetch.
+ * @returns {Promise<Object>} A promise that resolves to the inspection object.
+ */
+export const getInspectionById = async (id) => {
+  try {
+    const response = await api.get(`/inspections/${id}`);
     return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch inspection ${id}:`, error);
+    throw new Error(error.response?.data?.message || '상세 정보를 불러오는 데 실패했습니다.');
+  }
 };
 
-export const updateInspection = async (id, inspectionData) => {
-    const response = await api.put(`/inspections/${id}`, inspectionData);
-    return response.data;
-};
-
+/**
+ * Deletes a specific inspection by its ID.
+ * @param {number} id The ID of the inspection to delete.
+ * @returns {Promise<Object>} A promise that resolves to the response data from the server.
+ */
 export const deleteInspection = async (id) => {
+  try {
     const response = await api.delete(`/inspections/${id}`);
     return response.data;
+  } catch (error) {
+    console.error(`Failed to delete inspection ${id}:`, error);
+    throw new Error(error.response?.data?.message || '삭제에 실패했습니다.');
+  }
 };

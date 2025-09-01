@@ -43,11 +43,21 @@
     text-overflow: ellipsis;
 }
 
-.inspectionTable th {
-    font-weight: bold;
-    background-color: #f8f9fa;
-    color: #333;
+    text-align: left;
 }
+
+.clickableRow {
+    cursor: pointer;
+}
+
+.clickableRow:hover {
+    background-color: #f0f8ff; /* Light AliceBlue for hover */
+}
+
+.inspectionTable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    position: sticky;
 
 .progressBarContainer {
     display: flex;

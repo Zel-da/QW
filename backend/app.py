@@ -121,6 +121,32 @@ def get_inspections(current_user):
     finally:
         if conn: conn.close()
 
+@app.route('/my-inspections', methods=['GET'])
+@token_required
+def get_my_inspections(current_user):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code,
+                       i.inspected_quantity, i.defective_quantity, i.actioned_quantity,
+                       i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
+                FROM Inspections i
+                JOIN Users u ON i.user_id = u.id
+                JOIN Companies c ON i.company_id = c.id
+                JOIN Products p ON i.product_id = p.id
+                WHERE i.user_id = %s
+                ORDER BY i.received_date DESC;
+            """
+            cursor.execute(query, (current_user['id'],))
+            inspections = cursor.fetchall()
+            return jsonify(inspections)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 @app.route('/inspections', methods=['POST'])
 @token_required
 def add_inspection(current_user):
@@ -172,6 +198,33 @@ def add_inspection(current_user):
     finally:
         if conn: conn.close()
 
+@app.route('/inspections/<int:id>', methods=['GET'])
+@token_required
+def get_inspection_detail(current_user, id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code,
+                       i.inspected_quantity, i.defective_quantity, i.actioned_quantity,
+                       i.defect_reason, i.solution, i.received_date, i.target_date, i.progress_percentage
+                FROM Inspections i
+                JOIN Users u ON i.user_id = u.id
+                JOIN Companies c ON i.company_id = c.id
+                JOIN Products p ON i.product_id = p.id
+                WHERE i.id = %s;
+            """
+            cursor.execute(query, (id,))
+            inspection = cursor.fetchone()
+            if not inspection:
+                return jsonify({"message": "Inspection not found"}), 404
+            return jsonify(inspection)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 @app.route('/inspections/<int:id>', methods=['PUT'])
 @token_required
 def update_inspection(current_user, id):
@@ -179,7 +232,15 @@ def update_inspection(current_user, id):
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Author verification
+            cursor.execute("SELECT user_id FROM Inspections WHERE id = %s", (id,))
+            inspection = cursor.fetchone()
+            if not inspection:
+                return jsonify({"message": "Inspection not found"}), 404
+            if inspection['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+
             update_fields = ['inspected_quantity', 'defective_quantity', 'actioned_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage']
             set_clause = ", ".join([f"{field} = %s" for field in update_fields])
             params = [data.get(field) for field in update_fields]
@@ -201,7 +262,15 @@ def delete_inspection(current_user, id):
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Author verification
+            cursor.execute("SELECT user_id FROM Inspections WHERE id = %s", (id,))
+            inspection = cursor.fetchone()
+            if not inspection:
+                return jsonify({"message": "Inspection not found"}), 404
+            if inspection['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+
             cursor.execute("DELETE FROM Inspections WHERE id = %s", (id,))
             conn.commit()
             return jsonify({"message": "Inspection deleted successfully"})
