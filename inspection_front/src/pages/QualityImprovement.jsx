@@ -7,7 +7,7 @@ import QualityDetailModal from '../components/QualityDetailModal/QualityImprovem
 import { FaPlus } from 'react-icons/fa';
 
 // --- KPI Section --- //
-function QualityKpiSection({ items, onKpiClick }) { // onKpiClick prop 추가
+function QualityKpiSection({ items, onKpiClick }) {
     const kpiData = useMemo(() => {
         return items.reduce((acc, item) => {
             const status = item.status ? item.status.toLowerCase() : 'inprogress';
@@ -28,7 +28,6 @@ function QualityKpiSection({ items, onKpiClick }) { // onKpiClick prop 추가
                     {total > 0 && <KpiPieChart kpiData={{...kpiData, total}} />}
                 </div>
                 <div className={styles.kpiCardsContainer}>
-                    {/* 순서 변경 및 onClick 핸들러 추가 */}
                     <div className={`${styles.kpiCard} ${styles.total}`} onClick={() => onKpiClick('all')}>
                         <span className={styles.kpiValue}>{total}</span>
                         <p className={styles.kpiLabel}>전체 항목</p>
@@ -54,11 +53,8 @@ function QualityKpiSection({ items, onKpiClick }) { // onKpiClick prop 추가
 // --- List Section --- //
 function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleOpenModal = () => { 
-        if (!user) { alert('로그인이 필요합니다.'); return; } 
-        setIsModalOpen(true); 
-    };
+    const [filters, setFilters] = useState({ username: 'all', company_name: 'all', status: 'all' });
+    const [filterOptions, setFilterOptions] = useState({ usernames: [], company_names: [], statuses: [] });
 
     const statusMap = {
         inProgress: { text: '진행중', className: styles.inProgress },
@@ -66,11 +62,48 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
         delayed: { text: '지연', className: styles.delayed },
     };
 
+    useEffect(() => {
+        const usernames = [...new Set(items.map(item => item.username))];
+        const company_names = [...new Set(items.map(item => item.company_name))];
+        const statuses = [...new Set(items.map(item => item.status))];
+        setFilterOptions({ 
+            usernames: ['all', ...usernames],
+            company_names: ['all', ...company_names],
+            statuses: ['all', ...statuses]
+        });
+    }, [items]);
+
+    const filteredItems = useMemo(() => {
+        return items.filter(item => {
+            const { username, company_name, status } = filters;
+            return (
+                (username === 'all' || item.username === username) &&
+                (company_name === 'all' || item.company_name === company_name) &&
+                (status === 'all' || item.status === status)
+            );
+        });
+    }, [items, filters]);
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleOpenModal = () => { 
+        if (!user) { alert('로그인이 필요합니다.'); return; } 
+        setIsModalOpen(true); 
+    };
+
     return (
         <>
             <section className={styles.listSection}>
                 <div className={styles.sectionHeader}>
                     <h2>상세 목록</h2>
+                    <div className={styles.filters}>
+                        <select name="username" value={filters.username} onChange={handleFilterChange}>{filterOptions.usernames.map(o => (<option key={o} value={o}>{o === 'all' ? '담당자 전체' : o}</option>))}</select>
+                        <select name="company_name" value={filters.company_name} onChange={handleFilterChange}>{filterOptions.company_names.map(o => (<option key={o} value={o}>{o === 'all' ? '업체 전체' : o}</option>))}</select>
+                        <select name="status" value={filters.status} onChange={handleFilterChange}>{filterOptions.statuses.map(o => (<option key={o} value={o}>{o === 'all' ? '상태 전체' : (statusMap[o]?.text || o)}</option>))}</select>
+                    </div>
                     <button onClick={handleOpenModal} className={styles.addButton}><FaPlus size={12} /><span>등록</span></button>
                 </div>
                 <table className={styles.inspectionTable}>
@@ -80,7 +113,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {items.map((item) => {
+                        {filteredItems.map((item) => {
                             const statusInfo = statusMap[item.status] || {};
                             return (
                                 <tr key={item.id} onClick={() => onRowClick(item.id)} className={styles.clickableRow}>
@@ -114,7 +147,7 @@ function QualityImprovement({ user }) {
     const [error, setError] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [statusFilter, setStatusFilter] = useState('all'); // 필터 상태 추가
+    const [statusFilter, setStatusFilter] = useState('all');
 
     const fetchData = async () => {
         try {
@@ -155,7 +188,6 @@ function QualityImprovement({ user }) {
         if (statusFilter === 'all') {
             return allItems;
         }
-        // status 필드가 없는 경우를 대비하여 안전 장치 추가
         return allItems.filter(item => (item.status || 'inProgress') === statusFilter);
     }, [statusFilter, allItems]);
 
