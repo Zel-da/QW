@@ -1,6 +1,7 @@
 import os
 import pyodbc
 import jwt
+import re # 정규식 모듈 import
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
@@ -12,7 +13,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
-CORS(app, origins=["https://qw-nu0zqpq5a-ahnyejuns-projects.vercel.app"], supports_credentials=True)
+
+# --- CORS 설정 (최종 수정) ---
+# Vercel의 프로덕션 URL 및 모든 미리보기 URL을 허용하는 설정
+vercel_preview_pattern = re.compile(r"https://qw-.*-ahnyejuns-projects\.vercel\.app")
+allowed_origins = [
+    "https://qw.vercel.app", # Vercel 프로덕션 URL
+    vercel_preview_pattern   # 정규식을 사용하여 모든 Vercel 미리보기 URL 허용
+]
+CORS(app, origins=allowed_origins, supports_credentials=True)
+# --- CORS 설정 끝 ---
 
 # Load configuration from environment variables
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'a-very-secret-key'
