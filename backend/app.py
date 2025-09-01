@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
-CORS(app)
+CORS(app, origins=["https-qw-3z48rpfzt-ahnyejuns-projects.vercel.app"])
 
 # Load configuration from environment variables
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'a-very-secret-key'

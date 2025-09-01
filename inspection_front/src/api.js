@@ -2,7 +2,8 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 const api = axios.create({
-  baseURL: '/api',
+  // Use the environment variable for the API URL
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Add a request interceptor to include the token in headers
@@ -26,8 +27,6 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       if (window.location.pathname !== '/login') {
-        // Instead of forcing a reload, we can just notify the user or use a state management solution
-        // For simplicity now, we reload.
         window.location.reload();
         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
       }
