@@ -15,13 +15,9 @@ load_dotenv()
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
 # --- CORS 설정 (최종 수정) ---
-# Vercel의 프로덕션 URL 및 모든 미리보기 URL을 허용하는 설정
-vercel_preview_pattern = re.compile(r"https://qw-.*-ahnyejuns-projects\.vercel\.app")
-allowed_origins = [
-    "https://qw.vercel.app", # Vercel 프로덕션 URL
-    vercel_preview_pattern   # 정규식을 사용하여 모든 Vercel 미리보기 URL 허용
-]
-CORS(app, origins=allowed_origins, supports_credentials=True)
+# .vercel.app으로 끝나는 모든 서브도메인을 허용
+vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
+CORS(app, origins=vercel_origin_pattern, supports_credentials=True)
 # --- CORS 설정 끝 ---
 
 # Load configuration from environment variables
