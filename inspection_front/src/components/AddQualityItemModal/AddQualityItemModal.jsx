@@ -49,7 +49,7 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
     return (
         <div className={styles.modalBackdrop}>
             <div className={styles.modalContent}>
-                <h3>새 품질 개선 항목 등록</h3>
+                <h3>새 품질 개선 항목</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.fullWidth}>
                         <label>업체명</label>
@@ -79,7 +79,7 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                     <div className={styles.formActions}>
                         <button type="button" onClick={onClose} className={styles.cancelButton}>취소</button>
                         <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-                            {isSubmitting ? '제출 중...' : '제출'}
+                            {isSubmitting ? '등록 중...' : '등록'}
                         </button>
                     </div>
                 </form>

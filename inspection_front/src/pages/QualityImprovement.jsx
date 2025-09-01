@@ -28,10 +28,10 @@ function QualityKpiSection({ items }) {
                     {total > 0 && <KpiPieChart kpiData={kpiData} />}
                 </div>
                 <div className={styles.kpiCardsContainer}>
-                    <div className={`${styles.kpiCard} ${styles.delayed}`}><span className={styles.kpiValue}>{kpiData.delayed}</span><p className={styles.kpiLabel}>지연</p></div>
+                    <div className={`${styles.kpiCard} ${styles.total}`}><span className={styles.kpiValue}>{total}</span><p className={styles.kpiLabel}>전체 항목</p></div>
                     <div className={`${styles.kpiCard} ${styles.inProgress}`}><span className={styles.kpiValue}>{kpiData.inProgress}</span><p className={styles.kpiLabel}>진행 중</p></div>
                     <div className={`${styles.kpiCard} ${styles.completed}`}><span className={styles.kpiValue}>{kpiData.completed}</span><p className={styles.kpiLabel}>완료</p></div>
-                    <div className={`${styles.kpiCard} ${styles.total}`}><span className={styles.kpiValue}>{total}</span><p className={styles.kpiLabel}>전체 항목</p></div>
+                    <div className={`${styles.kpiCard} ${styles.delayed}`}><span className={styles.kpiValue}>{kpiData.delayed}</span><p className={styles.kpiLabel}>지연</p></div>
                 </div>
             </div>
         </section>
@@ -58,7 +58,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
             <section className={styles.listSection}>
                 <div className={styles.sectionHeader}>
                     <h2>상세 목록</h2>
-                    <button onClick={handleOpenModal} className={styles.addButton}><FaPlus size={12} /><span>새 항목</span></button>
+                    <button onClick={handleOpenModal} className={styles.addButton}><FaPlus size={12} /><span>등록</span></button>
                 </div>
                 <table className={styles.inspectionTable}>
                     <thead>
