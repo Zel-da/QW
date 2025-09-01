@@ -16,10 +16,9 @@ load_dotenv()
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
 # --- CORS 설정 ---
-vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
 CORS(
     app,
-    origins=vercel_origin_pattern,
+    origins=["https://qw-tau.vercel.app", "http://localhost:5173"], # Vercel 배포 주소와 로컬 개발 주소 명시
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"]
 )
