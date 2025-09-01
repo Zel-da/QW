@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getMyInspections, deleteInspection } from '../api/inspectionAPI';
-import { getMyQualityImprovements, deleteQualityImprovement } from '../api/qualityApi';
+import qualityApi from '../api/qualityApi';
 import styles from './MyPosts.module.css';
 
 // --- Inspections Table Component ---
@@ -76,7 +76,7 @@ const MyPosts = () => {
       setLoading(true);
       const [inspectionsData, qualityData] = await Promise.all([
         getMyInspections(),
-        getMyQualityImprovements()
+        qualityApi.getMyQualityImprovements()
       ]);
       setInspections(inspectionsData);
       setQualityItems(qualityData);
@@ -106,7 +106,7 @@ const MyPosts = () => {
   const handleDeleteQualityItem = async (id) => {
     if (window.confirm('정말로 이 항목을 삭제하시겠습니까?')) {
       try {
-        await deleteQualityImprovement(id);
+        await qualityApi.deleteQualityImprovement(id);
         setQualityItems(qualityItems.filter(item => item.id !== id));
       } catch (err) {
         alert(`삭제 실패: ${err.message}`);

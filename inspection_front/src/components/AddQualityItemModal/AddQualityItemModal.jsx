@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addQualityItem } from '../../api/qualityApi.js';
+import qualityApi from '../../api/qualityApi.js';
 import styles from '../AddInspectionModal/AddInspectionModal.module.css'; // Reuse styles
 
 function AddQualityItemModal({ user, onClose, onSuccess }) {
@@ -33,7 +33,7 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                 category: formData.category,
                 status: formData.status,
             };
-            await addQualityItem(payload);
+            await qualityApi.addQualityItem(payload);
             onSuccess(); // Re-fetch data on the parent component
             onClose();
         } catch (err) {

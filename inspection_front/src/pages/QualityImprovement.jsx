@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './QualityImprovement.module.css';
-import { getQualityImprovements, getQualityImprovementById, addQualityItem } from '../api/qualityApi.js';
+import qualityApi from '../api/qualityApi.js';
 import KpiPieChart from '../components/KpiPieChart.jsx';
 import AddQualityItemModal from '../components/AddQualityItemModal/AddQualityItemModal.jsx';
 import QualityImprovementDetailModal from '../components/QualityImprovementDetailModal/QualityImprovementDetailModal.jsx';
@@ -89,7 +89,7 @@ function QualityImprovement({ user }) {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const data = await getQualityImprovements();
+            const data = await qualityApi.getQualityImprovements();
             setAllItems(data);
         } catch (err) {
             setError(err.message);
@@ -104,7 +104,7 @@ function QualityImprovement({ user }) {
 
     const handleRowClick = async (id) => {
         try {
-            const data = await getQualityImprovementById(id);
+            const data = await qualityApi.getQualityImprovementById(id);
             setSelectedItem(data);
             setIsDetailModalOpen(true);
         } catch (err) {
