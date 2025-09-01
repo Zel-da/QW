@@ -1,5 +1,3 @@
-// src/components/KpiPieChart.jsx
-
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -41,6 +39,17 @@ function KpiPieChart({ kpiData }) {
                     size: 16
                 }
             },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.raw || 0;
+                        const total = context.chart.getDatasetMeta(0).total;
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                        return `${label}: ${value} (${percentage})`;
+                    }
+                }
+            }
         },
     };
 
