@@ -14,9 +14,15 @@ load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
-# --- CORS 설정 ---
+# --- CORS 설정 (최종 수정) ---
+# .vercel.app으로 끝나는 모든 서브도메인을 허용하고, 특정 헤더를 명시적으로 허용
 vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
-CORS(app, origins=vercel_origin_pattern, supports_credentials=True)
+CORS(
+    app, 
+    origins=vercel_origin_pattern, 
+    supports_credentials=True, 
+    allow_headers=["Content-Type", "Authorization"] # Authorization 헤더 허용
+)
 # --- CORS 설정 끝 ---
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'a-very-secret-key'
@@ -35,33 +41,32 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        print("--- New Request Received ---", flush=True)
-        print(f"Endpoint: {request.path}", flush=True)
-        print(f"Headers: {request.headers}", flush=True)
+        # print("--- New Request Received ---", flush=True)
+        # print(f"Headers: {request.headers}", flush=True)
 
         if 'authorization' in request.headers:
             auth_header = request.headers['authorization']
             if auth_header.startswith('Bearer '):
                 token = auth_header.split(" ")[1]
         
-        print(f"Extracted Token: {token}", flush=True)
+        # print(f"Extracted Token: {token}", flush=True)
 
         if not token:
-            print("DEBUG: Token is missing!", flush=True)
+            # print("DEBUG: Token is missing!", flush=True)
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
             secret = app.config['SECRET_KEY']
-            print(f"SECRET_KEY loaded: {'Yes' if secret else 'No'}", flush=True)
+            # print(f"SECRET_KEY loaded: {'Yes' if secret else 'No'}", flush=True)
             
             data = jwt.decode(token, secret, algorithms=["HS256"])
             current_user = {'id': data['user_id'], 'username': data['username']}
-            print(f"Token Decoded Successfully for user: {current_user['username']}", flush=True)
+            # print(f"Token Decoded Successfully for user: {current_user['username']}", flush=True)
         except jwt.ExpiredSignatureError:
-            print("DEBUG: Token has expired!", flush=True)
+            # print("DEBUG: Token has expired!", flush=True)
             return jsonify({'message': 'Token has expired!'}), 401
         except Exception as e:
-            print(f"DEBUG: Token decode failed! Error: {e}", flush=True)
+            # print(f"DEBUG: Token decode failed! Error: {e}", flush=True)
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(current_user, *args, **kwargs)
