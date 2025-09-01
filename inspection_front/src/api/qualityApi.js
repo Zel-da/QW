@@ -15,7 +15,7 @@ const qualityApi = {
   // GET a single quality improvement item by ID
   getQualityImprovementById: async (id) => {
     try {
-      const response = await api.get(`/quality-improvements/${id}`);
+      const response = await api.get(`/api/quality-improvements/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Failed to fetch quality improvement item ${id}:`, error);
@@ -37,7 +37,7 @@ const qualityApi = {
   // PUT (update) an existing quality improvement item
   updateQualityImprovement: async (id, itemData) => {
     try {
-      const response = await api.put(`/quality-improvements/${id}`, itemData);
+      const response = await api.put(`/api/quality-improvements/${id}`, itemData);
       return response.data;
     } catch (error) {
       console.error(`Failed to update quality improvement item ${id}:`, error);
@@ -59,7 +59,7 @@ const qualityApi = {
   // GET all quality improvement items for the current user
   getMyQualityImprovements: async () => {
     try {
-      const response = await api.get('/my-quality-improvements');
+      const response = await api.get('/api/my-quality-improvements');
       return response.data;
     } catch (error) {
       console.error("Failed to fetch my quality improvements:", error);

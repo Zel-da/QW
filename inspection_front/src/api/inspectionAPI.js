@@ -2,7 +2,7 @@ import api from '../api';
 
 export const getInspections = async () => {
   try {
-    const response = await api.get('/inspections');
+    const response = await api.get('/api/inspections');
     return response.data;
   } catch (error) {
     console.error("Failed to fetch inspections:", error);
@@ -22,7 +22,7 @@ export const getMyInspections = async () => {
 
 export const getInspectionById = async (id) => {
   try {
-    const response = await api.get(`/inspections/${id}`);
+    const response = await api.get(`/api/inspections/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Failed to fetch inspection ${id}:`, error);
@@ -32,7 +32,7 @@ export const getInspectionById = async (id) => {
 
 export const addInspection = async (inspectionData) => {
   try {
-    const response = await api.post('/inspections', inspectionData);
+    const response = await api.post('/api/inspections', inspectionData);
     return response.data;
   } catch (error) {
     console.error("Failed to add inspection:", error);
@@ -42,7 +42,7 @@ export const addInspection = async (inspectionData) => {
 
 export const updateInspection = async (id, inspectionData) => {
   try {
-    const response = await api.put(`/inspections/${id}`, inspectionData);
+    const response = await api.put(`/api/inspections/${id}`, inspectionData);
     return response.data;
   } catch (error) {
     console.error(`Failed to update inspection ${id}:`, error);
