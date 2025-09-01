@@ -228,29 +228,66 @@ def update_inspection(current_user, id):
     data = request.get_json()
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
+    
+    # A dictionary to map field names to human-readable names
+    field_names = {
+        'inspected_quantity': '검사수량',
+        'defective_quantity': '불량수량',
+        'defect_reason': '불량 원인',
+        'solution': '해결 방안',
+        'target_date': '조치 목표일',
+        'progress_percentage': '진행률',
+        'status': '상태'
+    }
+    
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            # Author verification
-            cursor.execute("SELECT user_id FROM Inspections WHERE id = %s", (id,))
-            inspection = cursor.fetchone()
-            if not inspection:
+            # Step 1: Get current state of the item
+            cursor.execute("SELECT * FROM Inspections WHERE id = %s", (id,))
+            old_item = cursor.fetchone()
+
+            if not old_item:
                 return jsonify({"message": "Inspection not found"}), 404
-            if inspection['user_id'] != current_user['id']:
+            # Author verification
+            if old_item['user_id'] != current_user['id']:
                 return jsonify({"message": "Permission denied"}), 403
 
-            update_fields = ['inspected_quantity', 'defective_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage', 'status']
+            # Step 2: Update the item
+            update_fields = [f for f in field_names.keys() if f in data]
+            if not update_fields:
+                return jsonify({"message": "No update fields provided"}), 400
+
             set_clause = ", ".join([f"{field} = %s" for field in update_fields])
-            # Add updated_at field
             set_clause += ", updated_at = NOW()"
             params = [data.get(field) for field in update_fields]
             params.append(id)
             
             query = f"UPDATE Inspections SET {set_clause} WHERE id = %s"
             cursor.execute(query, tuple(params))
+
+            # Step 3: Log changes to Histories table
+            for field in update_fields:
+                old_value = old_item.get(field)
+                new_value = data.get(field)
+                
+                # To prevent logging for non-changes (e.g. None vs '')
+                old_value_str = str(old_value) if old_value is not None else ""
+                new_value_str = str(new_value) if new_value is not None else ""
+
+                if old_value_str != new_value_str:
+                    field_name_kor = field_names.get(field, field)
+                    action_log = f"'{field_name_kor}' 변경 ({old_value_str} -> {new_value_str})"
+                    cursor.execute(
+                        "INSERT INTO Histories (user_id, parent_id, parent_type, action) VALUES (%s, %s, %s, %s)",
+                        (current_user['id'], id, 'inspection', action_log)
+                    )
+
             conn.commit()
             return jsonify({"message": "Inspection updated successfully"})
     except Exception as e:
         conn.rollback()
+        # Provide more detailed error in log
+        print(f"Error in update_inspection: {e}", flush=True)
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         if conn: conn.close()
@@ -403,33 +440,60 @@ def update_quality_improvement(current_user, id):
     data = request.get_json()
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
+
+    field_names = {
+        'item_description': '개선항목',
+        'start_date': '시작일',
+        'end_date': '마감일',
+        'progress': '진행률',
+        'status': '상태'
+    }
+
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute("SELECT user_id FROM QualityImprovements WHERE id = %s", (id,))
-            item = cursor.fetchone()
-            if not item:
+            # Step 1: Get current state
+            cursor.execute("SELECT * FROM QualityImprovements WHERE id = %s", (id,))
+            old_item = cursor.fetchone()
+
+            if not old_item:
                 return jsonify({"message": "Item not found"}), 404
-            if item['user_id'] != current_user['id']:
+            if old_item['user_id'] != current_user['id']:
                 return jsonify({"message": "Permission denied"}), 403
 
-            query = """
-                UPDATE QualityImprovements
-                SET item_description = %s, start_date = %s, end_date = %s, progress = %s, status = %s, updated_at = NOW()
-                WHERE id = %s
-            """
-            params = (
-                data.get('item_description'),
-                data.get('start_date'),
-                data.get('end_date'),
-                data.get('progress'),
-                data.get('status'),
-                id
-            )
-            cursor.execute(query, params)
+            # Step 2: Update the item
+            update_fields = [f for f in field_names.keys() if f in data]
+            if not update_fields:
+                return jsonify({"message": "No update fields provided"}), 400
+            
+            set_clause = ", ".join([f"{field} = %s" for field in update_fields])
+            set_clause += ", updated_at = NOW()"
+            params = [data.get(field) for field in update_fields]
+            params.append(id)
+
+            query = f"UPDATE QualityImprovements SET {set_clause} WHERE id = %s"
+            cursor.execute(query, tuple(params))
+
+            # Step 3: Log changes
+            for field in update_fields:
+                old_value = old_item.get(field)
+                new_value = data.get(field)
+
+                old_value_str = str(old_value) if old_value is not None else ""
+                new_value_str = str(new_value) if new_value is not None else ""
+
+                if old_value_str != new_value_str:
+                    field_name_kor = field_names.get(field, field)
+                    action_log = f"'{field_name_kor}' 변경 ({old_value_str} -> {new_value_str})"
+                    cursor.execute(
+                        "INSERT INTO Histories (user_id, parent_id, parent_type, action) VALUES (%s, %s, %s, %s)",
+                        (current_user['id'], id, 'quality', action_log)
+                    )
+
             conn.commit()
             return jsonify({"message": "Quality improvement item updated successfully"})
     except Exception as e:
         conn.rollback()
+        print(f"Error in update_quality_improvement: {e}", flush=True)
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         if conn: conn.close()
@@ -570,6 +634,33 @@ def delete_user(current_user, id):
             return jsonify({"message": "User deleted successfully"})
     except Exception as e:
         conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+# == Histories Endpoint ==
+@app.route('/api/histories/<parent_type>/<int:parent_id>', methods=['GET'])
+@token_required
+def get_histories(current_user, parent_type, parent_id):
+    if parent_type not in ['inspection', 'quality']:
+        return jsonify({"message": "Invalid parent type"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT h.action, h.created_at, u.username
+                FROM Histories h
+                JOIN Users u ON h.user_id = u.id
+                WHERE h.parent_type = %s AND h.parent_id = %s
+                ORDER BY h.created_at DESC;
+            """
+            cursor.execute(query, (parent_type, parent_id))
+            histories = cursor.fetchall()
+            return jsonify(histories)
+    except Exception as e:
+        print(f"Error in get_histories: {e}", flush=True)
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         if conn: conn.close()

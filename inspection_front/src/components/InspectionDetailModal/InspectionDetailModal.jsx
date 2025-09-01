@@ -1,13 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import historyApi from '../../api/historyApi';
 import styles from './InspectionDetailModal.module.css';
 
 const InspectionDetailModal = ({ item, onClose }) => {
+  const [histories, setHistories] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const data = await historyApi.getHistories('inspection', item.id);
+          setHistories(data);
+        } catch (error) {
+          console.error("Failed to fetch histories:", error);
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+      fetchHistory();
+    }
+  }, [item]);
+
   if (!item) return null;
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString();
   };
+  
+  const formatHistoryDate = (dateString) => {
+      if (!dateString) return '';
+      return new Date(dateString).toLocaleString();
+  }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -18,7 +44,6 @@ const InspectionDetailModal = ({ item, onClose }) => {
         </div>
         <div className={styles.content}>
           <div className={styles.grid}>
-            
             <div className={styles.gridItem}><strong>작성자:</strong> {item.username}</div>
             <div className={styles.gridItem}><strong>업체명:</strong> {item.company_name}</div>
             <div className={styles.gridItem}><strong>품명:</strong> {item.product_name}</div>
@@ -37,6 +62,28 @@ const InspectionDetailModal = ({ item, onClose }) => {
           <div className={styles.fullWidthItem}>
             <strong>해결 방안:</strong>
             <p>{item.solution || '-'}</p>
+          </div>
+          
+          {/* History Section */}
+          <div className={styles.historySection}>
+            <h4 className={styles.historyTitle}>수정 내역</h4>
+            {loadingHistory ? (
+              <p>내역 로딩 중...</p>
+            ) : (
+              <ul className={styles.historyList}>
+                {histories.length > 0 ? (
+                  histories.map((log, index) => (
+                    <li key={index} className={styles.historyItem}>
+                      <span className={styles.historyDate}>({formatHistoryDate(log.created_at)})</span>
+                      <span className={styles.historyUser}>[{log.username}]</span>
+                      <span className={styles.historyAction}>{log.action}</span>
+                    </li>
+                  ))
+                ) : (
+                  <p>수정 내역이 없습니다.</p>
+                )}
+              </ul>
+            )}
           </div>
         </div>
         <div className={styles.footer}>
