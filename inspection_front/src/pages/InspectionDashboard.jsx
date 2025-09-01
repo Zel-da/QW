@@ -1,30 +1,11 @@
 // src/pages/InspectionDashboard.jsx
 
-import React, { useEffect } from 'react';
-import api from '../api'; // Import the centralized api instance
-// import KpiSection from '../components/KpiSection/KpiSection.jsx'; // Temporarily disabled
+import React from 'react';
+// import KpiSection from '../components/KpiSection/KpiSection.jsx'; // 백엔드 API 준비 후 활성화 예정
 import ListSection from '../components/ListSection/ListSection.jsx';
-import styles from './InspectionDashboard.module.css'; // 페이지 전용 CSS 모듈 import
+import styles from './InspectionDashboard.module.css';
 
 function InspectionDashboard({ user }) {
-
-    // DEBUG: Add a useEffect to call the debug endpoint
-    useEffect(() => {
-        const debugRequest = async () => {
-            if (user) { // Only run if logged in
-                try {
-                    console.log("Sending request to /debug-headers...");
-                    const response = await api.get('/debug-headers');
-                    console.log("Response from /debug-headers:", response.data);
-                } catch (error) {
-                    console.error("Error calling /debug-headers:", error);
-                }
-            }
-        };
-
-        debugRequest();
-    }, [user]); // Rerun when user state changes
-
     return (
         <>
             <div className={styles.contentTitleArea}>
@@ -33,7 +14,6 @@ function InspectionDashboard({ user }) {
             </div>
             <div className={styles.scrollableContent}>
                 {/* <KpiSection /> */}
-                {/* 위 KPI 섹션은 백엔드 API 준비 후 활성화 예정입니다. */}
                 <ListSection user={user} />
             </div>
         </>
