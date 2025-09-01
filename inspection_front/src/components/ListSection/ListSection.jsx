@@ -125,7 +125,7 @@ function ListSection({ user, inspections, onSuccess }) { // inspectionsë¥¼ propì
             )}
 
             {isDetailModalOpen && (
-                <InspectionDetailModal item={selectedInspection} onClose={() => setIsDetailModalOpen(false)} />
+                <InspectionDetailModal user={user} item={selectedInspection} onClose={() => setIsDetailModalOpen(false)} />
             )}
         </>
     );

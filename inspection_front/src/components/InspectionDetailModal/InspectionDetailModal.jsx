@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import historyApi from '../../api/historyApi';
+import CommentSection from '../CommentSection/CommentSection.jsx'; // Import CommentSection
 import styles from './InspectionDetailModal.module.css';
 
-const InspectionDetailModal = ({ item, onClose }) => {
+const InspectionDetailModal = ({ item, onClose, user }) => { // Add user prop
   const [histories, setHistories] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -85,6 +86,10 @@ const InspectionDetailModal = ({ item, onClose }) => {
               </ul>
             )}
           </div>
+
+          {/* Comment Section */}
+          <CommentSection user={user} parentId={item.id} parentType="inspection" />
+
         </div>
         <div className={styles.footer}>
           <button className={styles.footerButton} onClick={onClose}>닫기</button>

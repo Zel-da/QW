@@ -546,6 +546,157 @@ def get_my_quality_improvements(current_user):
     finally:
         if conn: conn.close()
 
+# == Comments Endpoints ==
+@app.route('/api/comments/<parent_type>/<int:parent_id>', methods=['GET'])
+@token_required
+def get_comments(current_user, parent_type, parent_id):
+    if parent_type not in ['inspection', 'quality']:
+        return jsonify({"message": "Invalid parent type"}), 400
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT c.id, c.content, c.created_at, c.updated_at, u.username, c.user_id
+                FROM Comments c
+                JOIN Users u ON c.user_id = u.id
+                WHERE c.parent_type = %s AND c.parent_id = %s
+                ORDER BY c.created_at ASC;
+            """
+            cursor.execute(query, (parent_type, parent_id))
+            comments = cursor.fetchall()
+            return jsonify(comments)
+    except Exception as e:
+        print(f"Error in get_comments: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/comments', methods=['POST'])
+@token_required
+def add_comment(current_user):
+    data = request.get_json()
+    content = data.get('content')
+    parent_id = data.get('parent_id')
+    parent_type = data.get('parent_type')
+
+    if not all([content, parent_id, parent_type]):
+        return jsonify({"message": "Missing required fields"}), 400
+    if parent_type not in ['inspection', 'quality']:
+        return jsonify({"message": "Invalid parent type"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                INSERT INTO Comments (user_id, parent_id, parent_type, content)
+                VALUES (%s, %s, %s, %s) RETURNING id, created_at, updated_at;
+            """
+            cursor.execute(query, (current_user['id'], parent_id, parent_type, content))
+            new_comment = cursor.fetchone()
+            conn.commit()
+            return jsonify({
+                "message": "Comment added successfully",
+                "comment": {
+                    **new_comment,
+                    'username': current_user['username'],
+                    'user_id': current_user['id'],
+                    'content': content
+                }
+            }), 201
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in add_comment: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/comments/<int:comment_id>', methods=['PUT'])
+@token_required
+def update_comment(current_user, comment_id):
+    data = request.get_json()
+    content = data.get('content')
+
+    if not content:
+        return jsonify({"message": "Content is required"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT user_id FROM Comments WHERE id = %s", (comment_id,))
+            comment = cursor.fetchone()
+            if not comment:
+                return jsonify({"message": "Comment not found"}), 404
+            if comment['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+
+            cursor.execute(
+                "UPDATE Comments SET content = %s, updated_at = NOW() WHERE id = %s RETURNING updated_at",
+                (content, comment_id)
+            )
+            updated_at = cursor.fetchone()['updated_at']
+            conn.commit()
+            return jsonify({"message": "Comment updated successfully", "updated_at": updated_at})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in update_comment: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/comments/<int:comment_id>', methods=['DELETE'])
+@token_required
+def delete_comment(current_user, comment_id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT user_id FROM Comments WHERE id = %s", (comment_id,))
+            comment = cursor.fetchone()
+            if not comment:
+                return jsonify({"message": "Comment not found"}), 404
+            if comment['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+
+            cursor.execute("DELETE FROM Comments WHERE id = %s", (comment_id,))
+            conn.commit()
+            return jsonify({"message": "Comment deleted successfully"})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in delete_comment: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+# == Histories Endpoint ==
+@app.route('/api/histories/<parent_type>/<int:parent_id>', methods=['GET'])
+@token_required
+def get_histories(current_user, parent_type, parent_id):
+    if parent_type not in ['inspection', 'quality']:
+        return jsonify({"message": "Invalid parent type"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT h.action, h.created_at, u.username
+                FROM Histories h
+                JOIN Users u ON h.user_id = u.id
+                WHERE h.parent_type = %s AND h.parent_id = %s
+                ORDER BY h.created_at DESC;
+            """
+            cursor.execute(query, (parent_type, parent_id))
+            histories = cursor.fetchall()
+            return jsonify(histories)
+    except Exception as e:
+        print(f"Error in get_histories: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 # == User Management Endpoints (Admin Only) ==
 
 def is_admin(current_user):
@@ -634,33 +785,6 @@ def delete_user(current_user, id):
             return jsonify({"message": "User deleted successfully"})
     except Exception as e:
         conn.rollback()
-        return jsonify({"message": f"An error occurred: {e}"}), 500
-    finally:
-        if conn: conn.close()
-
-# == Histories Endpoint ==
-@app.route('/api/histories/<parent_type>/<int:parent_id>', methods=['GET'])
-@token_required
-def get_histories(current_user, parent_type, parent_id):
-    if parent_type not in ['inspection', 'quality']:
-        return jsonify({"message": "Invalid parent type"}), 400
-
-    conn = get_db_connection()
-    if not conn: return jsonify({"message": "Database connection failed"}), 500
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            query = """
-                SELECT h.action, h.created_at, u.username
-                FROM Histories h
-                JOIN Users u ON h.user_id = u.id
-                WHERE h.parent_type = %s AND h.parent_id = %s
-                ORDER BY h.created_at DESC;
-            """
-            cursor.execute(query, (parent_type, parent_id))
-            histories = cursor.fetchall()
-            return jsonify(histories)
-    except Exception as e:
-        print(f"Error in get_histories: {e}", flush=True)
         return jsonify({"message": f"An error occurred: {e}"}), 500
     finally:
         if conn: conn.close()

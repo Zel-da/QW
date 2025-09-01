@@ -173,7 +173,7 @@ function QualityImprovement({ user }) {
                 <QualityListSection user={user} items={filteredByKpi} onRowClick={handleRowClick} onAddSuccess={fetchData} />
             </div>
             {isDetailModalOpen && (
-                <QualityDetailModal item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />
+                <QualityDetailModal user={user} item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />
             )}
         </>
     );
