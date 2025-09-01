@@ -14,14 +14,13 @@ load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
-# --- CORS 설정 (최종 수정) ---
-# .vercel.app으로 끝나는 모든 서브도메인을 허용하고, 특정 헤더를 명시적으로 허용
-vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
+# --- CORS 설정 (디버깅용) ---
+# 특정 Vercel 주소 하나만 명시적으로 허용
 CORS(
     app, 
-    origins=vercel_origin_pattern, 
+    origins=["https://qw-jm1f8ijam-ahnyejuns-projects.vercel.app"], 
     supports_credentials=True, 
-    allow_headers=["Content-Type", "Authorization"] # Authorization 헤더 허용
+    allow_headers=["Content-Type", "Authorization"]
 )
 # --- CORS 설정 끝 ---
 
@@ -36,37 +35,26 @@ def get_db_connection():
         print(f"Database connection error: {e}")
         return None
 
-# == JWT Token Decorator (with Debugging) ==
+# == JWT Token Decorator ==
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        # print("--- New Request Received ---", flush=True)
-        # print(f"Headers: {request.headers}", flush=True)
-
         if 'authorization' in request.headers:
             auth_header = request.headers['authorization']
             if auth_header.startswith('Bearer '):
                 token = auth_header.split(" ")[1]
         
-        # print(f"Extracted Token: {token}", flush=True)
-
         if not token:
-            # print("DEBUG: Token is missing!", flush=True)
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
             secret = app.config['SECRET_KEY']
-            # print(f"SECRET_KEY loaded: {'Yes' if secret else 'No'}", flush=True)
-            
             data = jwt.decode(token, secret, algorithms=["HS256"])
             current_user = {'id': data['user_id'], 'username': data['username']}
-            # print(f"Token Decoded Successfully for user: {current_user['username']}", flush=True)
         except jwt.ExpiredSignatureError:
-            # print("DEBUG: Token has expired!", flush=True)
             return jsonify({'message': 'Token has expired!'}), 401
         except Exception as e:
-            # print(f"DEBUG: Token decode failed! Error: {e}", flush=True)
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(current_user, *args, **kwargs)
@@ -76,7 +64,6 @@ def token_required(f):
 # == User Authentication Endpoints ==
 @app.route('/login', methods=['POST'])
 def login():
-    # ... (login logic remains the same)
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -113,7 +100,6 @@ def login():
 @app.route('/inspections', methods=['GET'])
 @token_required
 def get_inspections(current_user):
-    # ...
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
@@ -137,7 +123,6 @@ def get_inspections(current_user):
         cursor.close()
         conn.close()
 
-# ... (all other API routes are the same, just with @token_required)
 @app.route('/inspections', methods=['POST'])
 @token_required
 def add_inspection(current_user):
