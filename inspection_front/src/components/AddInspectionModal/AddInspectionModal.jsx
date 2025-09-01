@@ -5,18 +5,18 @@ import { addInspection } from '../../api/inspectionAPI.js';
 import styles from './AddInspectionModal.module.css';
 
 function AddInspectionModal({ user, onClose, onSuccess }) {
-    // 폼의 각 입력 필드를 위한 State
+    // 폼의 각 입력 필드를 백엔드 API의 key와 일치시킴
     const [formData, setFormData] = useState({
-        manager: user.name, // 담당자는 로그인 정보로 자동 설정
-        company: '',
-        partName: '',
-        totalCount: '',
-        defectCount: '',
-        reason: '',
+        company_name: '',
+        product_name: '',
+        product_code: '', // 제품 코드 필드 추가
+        inspected_quantity: '',
+        defective_quantity: '',
+        actioned_quantity: '',
+        defect_reason: '',
         solution: '',
-        dueDate: '',
-        progress: 0,
-        status: 'in-progress', // 기본 상태값
+        target_date: '',
+        progress_percentage: 0,
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,31 +26,23 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSliderChange = (e) => {
-        const progress = parseInt(e.target.value, 10);
-        let status = 'in-progress';
-        if (progress === 100) {
-            status = 'completed';
-        }
-        // 목표일이 지났는지 여부는 실제 로직에서 추가 필요 (여기서는 생략)
-        setFormData(prev => ({ ...prev, progress, status }));
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true); // 제출 시작, 버튼 비활성화
+        setIsSubmitting(true);
 
         try {
-            const newEntry = await addInspection(formData);
-            onSuccess(newEntry);
+            // onSuccess 콜백은 이제 ListSection에서 직접 데이터를 재로딩하므로, 반환값이 필요 없음
+            await addInspection(formData);
+            onSuccess(); // 성공했다는 사실만 부모에게 알림
             onClose();
         } catch (error) {
             console.error("제출 실패:", error);
             alert("데이터 제출에 실패했습니다.");
         } finally {
-            setIsSubmitting(false); // 제출 완료, 버튼 다시 활성화
+            setIsSubmitting(false);
         }
     };
+
     return (
         <div className={styles.modalBackdrop}>
             <div className={styles.modalContent}>
@@ -59,63 +51,61 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
                     {/* 담당자 (자동 입력, 수정 불가) */}
                     <div>
                         <label>담당자명</label>
-                        <input type="text" value={formData.manager} disabled />
+                        <input type="text" value={user.name} disabled />
                     </div>
                     {/* 업체명 */}
                     <div>
                         <label>업체명</label>
-                        <input type="text" name="company" value={formData.company} onChange={handleChange} required />
+                        <input type="text" name="company_name" value={formData.company_name} onChange={handleChange} required />
                     </div>
                     {/* 부품명 */}
                     <div className={styles.fullWidth}>
-                        <label>부품명</label>
-                        <input type="text" name="partName" value={formData.partName} onChange={handleChange} required />
+                        <label>제품명</label>
+                        <input type="text" name="product_name" value={formData.product_name} onChange={handleChange} required />
+                    </div>
+                    {/* 제품코드 */}
+                    <div className={styles.fullWidth}>
+                        <label>제품 코드</label>
+                        <input type="text" name="product_code" value={formData.product_code} onChange={handleChange} required />
                     </div>
                     {/* 검사/불량 개수 */}
                     <div>
-                        <label>검사 개수</label>
-                        <input type="number" name="totalCount" value={formData.totalCount} onChange={handleChange} min="1" required />
+                        <label>검사 수량</label>
+                        <input type="number" name="inspected_quantity" value={formData.inspected_quantity} onChange={handleChange} min="1" required />
                     </div>
                     <div>
-                        <label>불량 개수</label>
-                        <input type="number" name="defectCount" value={formData.defectCount} onChange={handleChange} min="0" required />
+                        <label>불량 수량</label>
+                        <input type="number" name="defective_quantity" value={formData.defective_quantity} onChange={handleChange} min="0" required />
+                    </div>
+                     <div>
+                        <label>조치 수량</label>
+                        <input type="number" name="actioned_quantity" value={formData.actioned_quantity} onChange={handleChange} min="0" />
                     </div>
                     {/* 불량사유 */}
                     <div className={styles.fullWidth}>
-                        <label>불량사유</label>
-                        <textarea name="reason" value={formData.reason} onChange={handleChange} rows="3" required />
+                        <label>불량 원인</label>
+                        <textarea name="defect_reason" value={formData.defect_reason} onChange={handleChange} rows="3" required />
                     </div>
                     {/* 대처방안 */}
                     <div className={styles.fullWidth}>
-                        <label>대처방안</label>
+                        <label>대처 방안</label>
                         <textarea name="solution" value={formData.solution} onChange={handleChange} rows="3" required />
                     </div>
                     {/* 목표일 */}
                     <div>
-                        <label>목표일</label>
-                        <input type="date" name="dueDate" value={formData.dueDate} onChange={handleChange} required />
+                        <label>조치 목표일</label>
+                        <input type="date" name="target_date" value={formData.target_date} onChange={handleChange} required />
                     </div>
-                    {/* 상태 */}
-                    <div>
-                        <label>상태</label>
-                        <select name="status" value={formData.status} onChange={handleChange}>
-                            <option value="in-progress">진행중</option>
-                            <option value="completed">완료</option>
-                            <option value="delayed">지연</option>
-                        </select>
-                    </div>
-                    {/* 진행률 슬라이더 */}
+                    {/* 진행률 */}
                     <div className={styles.fullWidth}>
-                        <label>진행률: {formData.progress}%</label>
+                        <label>진행률: {formData.progress_percentage}%</label>
                         <input
                             type="range"
-                            name="progress"
-                            value={formData.progress}
-                            onChange={handleSliderChange}
+                            name="progress_percentage"
+                            value={formData.progress_percentage}
+                            onChange={handleChange}
                             min="0" max="100" step="5"
                             className={styles.slider}
-                            style={{ '--progress-percent': `${formData.progress}%` }}
-
                         />
                     </div>
 
@@ -125,9 +115,9 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
                         <button
                             type="submit"
                             className={styles.submitButton}
-                            disabled={isSubmitting} /* isSubmitting이 true일 때 버튼 비활성화 */
+                            disabled={isSubmitting}
                         >
-                            {isSubmitting ? '제출 중...' : '제출'} {/* 상태에 따라 문구 변경 */}
+                            {isSubmitting ? '제출 중...' : '제출'}
                         </button>
                     </div>
                 </form>
