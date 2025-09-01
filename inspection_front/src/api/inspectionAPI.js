@@ -1,6 +1,21 @@
 import api from '../api';
 
 /**
+ * Adds a new inspection.
+ * @param {Object} inspectionData The data for the new inspection.
+ * @returns {Promise<Object>} A promise that resolves to the response data from the server.
+ */
+export const addInspection = async (inspectionData) => {
+  try {
+    const response = await api.post('/inspections', inspectionData);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to add inspection:", error);
+    throw new Error(error.response?.data?.message || '검수 항목 추가에 실패했습니다.');
+  }
+};
+
+/**
  * Fetches inspections created by the currently logged-in user.
  * @returns {Promise<Array>} A promise that resolves to an array of inspections.
  */
