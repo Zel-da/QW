@@ -1,7 +1,7 @@
 import os
 import pyodbc
 import jwt
-import re # 정규식 모듈 import
+import re
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
@@ -14,18 +14,15 @@ load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
-# --- CORS 설정 (최종 수정) ---
-# .vercel.app으로 끝나는 모든 서브도메인을 허용
+# --- CORS 설정 ---
 vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
 CORS(app, origins=vercel_origin_pattern, supports_credentials=True)
 # --- CORS 설정 끝 ---
 
-# Load configuration from environment variables
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'a-very-secret-key'
 DATABASE_URI = os.getenv('DATABASE_URI')
 
 def get_db_connection():
-    """Establishes a connection to the MSSQL database."""
     try:
         conn = pyodbc.connect(DATABASE_URI)
         return conn
@@ -33,25 +30,38 @@ def get_db_connection():
         print(f"Database connection error: {e}")
         return None
 
-# == JWT Token Decorator ==
+# == JWT Token Decorator (with Debugging) ==
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
+        print("--- New Request Received ---", flush=True)
+        print(f"Endpoint: {request.path}", flush=True)
+        print(f"Headers: {request.headers}", flush=True)
+
         if 'authorization' in request.headers:
             auth_header = request.headers['authorization']
             if auth_header.startswith('Bearer '):
                 token = auth_header.split(" ")[1]
+        
+        print(f"Extracted Token: {token}", flush=True)
 
         if not token:
+            print("DEBUG: Token is missing!", flush=True)
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            secret = app.config['SECRET_KEY']
+            print(f"SECRET_KEY loaded: {'Yes' if secret else 'No'}", flush=True)
+            
+            data = jwt.decode(token, secret, algorithms=["HS256"])
             current_user = {'id': data['user_id'], 'username': data['username']}
+            print(f"Token Decoded Successfully for user: {current_user['username']}", flush=True)
         except jwt.ExpiredSignatureError:
+            print("DEBUG: Token has expired!", flush=True)
             return jsonify({'message': 'Token has expired!'}), 401
-        except jwt.InvalidTokenError:
+        except Exception as e:
+            print(f"DEBUG: Token decode failed! Error: {e}", flush=True)
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(current_user, *args, **kwargs)
@@ -61,7 +71,7 @@ def token_required(f):
 # == User Authentication Endpoints ==
 @app.route('/login', methods=['POST'])
 def login():
-    """Handles user login and returns a JWT token."""
+    # ... (login logic remains the same)
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -94,10 +104,11 @@ def login():
         cursor.close()
         conn.close()
 
-# == Inspections Endpoints ==
+# == Other Endpoints (Protected) ==
 @app.route('/inspections', methods=['GET'])
 @token_required
 def get_inspections(current_user):
+    # ...
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
@@ -121,17 +132,16 @@ def get_inspections(current_user):
         cursor.close()
         conn.close()
 
+# ... (all other API routes are the same, just with @token_required)
 @app.route('/inspections', methods=['POST'])
 @token_required
 def add_inspection(current_user):
     data = request.get_json()
-    # ... (validation remains the same)
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
     try:
         conn.autocommit = False
-        # ... (company/product logic remains the same)
         company_name = data['company_name']
         cursor.execute("SELECT id FROM Companies WHERE company_name = ?", (company_name,))
         company = cursor.fetchone()
@@ -154,7 +164,7 @@ def add_inspection(current_user):
             product_id = cursor.fetchone()[0]
 
         params = (
-            company_id, product_id, current_user['id'], # Use user_id from token
+            company_id, product_id, current_user['id'],
             data.get('inspected_quantity'), data.get('defective_quantity'),
             data.get('actioned_quantity'), data.get('defect_reason'),
             data.get('solution'), data.get('target_date'),
@@ -177,7 +187,6 @@ def add_inspection(current_user):
 @app.route('/inspections/<int:id>', methods=['PUT'])
 @token_required
 def update_inspection(current_user, id):
-    # ... (logic is the same, just add current_user parameter)
     data = request.get_json()
     update_fields = ['inspected_quantity', 'defective_quantity', 'actioned_quantity', 'defect_reason', 'solution', 'target_date', 'progress_percentage']
     set_clause = ", ".join([f"{field} = ?" for field in update_fields])
@@ -201,7 +210,6 @@ def update_inspection(current_user, id):
 @app.route('/inspections/<int:id>', methods=['DELETE'])
 @token_required
 def delete_inspection(current_user, id):
-    # ... (logic is the same, just add current_user parameter)
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
@@ -216,11 +224,9 @@ def delete_inspection(current_user, id):
         cursor.close()
         conn.close()
 
-# == Filter Data Endpoints (also protected) ==
 @app.route('/companies', methods=['GET'])
 @token_required
 def get_companies(current_user):
-    # ... (logic is the same)
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
@@ -235,7 +241,6 @@ def get_companies(current_user):
 @app.route('/users', methods=['GET'])
 @token_required
 def get_users(current_user):
-    # ... (logic is the same)
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     cursor = conn.cursor()
