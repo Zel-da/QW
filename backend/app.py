@@ -77,7 +77,7 @@ def login():
                 'exp': datetime.utcnow() + timedelta(hours=24)
             }, app.config['SECRET_KEY'], algorithm="HS256")
             
-            cursor.execute("UPDATE Users SET last_login = GETDATE() WHERE username = ?", (username,))
+            cursor.execute("UPDATE Users SET last_login = NOW() WHERE username = ?", (username,))
             conn.commit()
             return jsonify({'message': 'Login successful', 'token': token})
         else:
