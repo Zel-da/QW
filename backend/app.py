@@ -310,6 +310,162 @@ def get_users(current_user):
     finally:
         if conn: conn.close()
 
+# == Quality Improvement Endpoints ==
+
+@app.route('/quality-improvements', methods=['GET'])
+@token_required
+def get_quality_improvements(current_user):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT q.id, u.username, q.title, q.category, q.status, q.created_at
+                FROM QualityImprovement q
+                JOIN Users u ON q.user_id = u.id
+                ORDER BY q.created_at DESC;
+            """
+            cursor.execute(query)
+            items = cursor.fetchall()
+            return jsonify(items)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/quality-improvements', methods=['POST'])
+@token_required
+def add_quality_improvement(current_user):
+    data = request.get_json()
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor() as cursor:
+            query = """
+                INSERT INTO QualityImprovement (user_id, title, description, category, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            params = (
+                current_user['id'],
+                data.get('title'),
+                data.get('description'),
+                data.get('category'),
+                data.get('status', 'Open')
+            )
+            cursor.execute(query, params)
+            conn.commit()
+            return jsonify({"message": "Quality improvement item added successfully"}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/quality-improvements/<int:id>', methods=['GET'])
+@token_required
+def get_quality_improvement_detail(current_user, id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT q.*, u.username
+                FROM QualityImprovement q
+                JOIN Users u ON q.user_id = u.id
+                WHERE q.id = %s;
+            """
+            cursor.execute(query, (id,))
+            item = cursor.fetchone()
+            if not item:
+                return jsonify({"message": "Item not found"}), 404
+            return jsonify(item)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/quality-improvements/<int:id>', methods=['PUT'])
+@token_required
+def update_quality_improvement(current_user, id):
+    data = request.get_json()
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT user_id FROM QualityImprovement WHERE id = %s", (id,))
+            item = cursor.fetchone()
+            if not item:
+                return jsonify({"message": "Item not found"}), 404
+            if item['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+
+            query = """
+                UPDATE QualityImprovement
+                SET title = %s, description = %s, category = %s, status = %s
+                WHERE id = %s
+            """
+            params = (
+                data.get('title'),
+                data.get('description'),
+                data.get('category'),
+                data.get('status'),
+                id
+            )
+            cursor.execute(query, params)
+            conn.commit()
+            return jsonify({"message": "Quality improvement item updated successfully"})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/quality-improvements/<int:id>', methods=['DELETE'])
+@token_required
+def delete_quality_improvement(current_user, id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT user_id FROM QualityImprovement WHERE id = %s", (id,))
+            item = cursor.fetchone()
+            if not item:
+                return jsonify({"message": "Item not found"}), 404
+            if item['user_id'] != current_user['id']:
+                return jsonify({"message": "Permission denied"}), 403
+            
+            cursor.execute("DELETE FROM Comments WHERE quality_item_id = %s", (id,))
+            cursor.execute("DELETE FROM QualityImprovement WHERE id = %s", (id,))
+            conn.commit()
+            return jsonify({"message": "Quality improvement item deleted successfully"})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route('/my-quality-improvements', methods=['GET'])
+@token_required
+def get_my_quality_improvements(current_user):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = """
+                SELECT q.id, u.username, q.title, q.category, q.status, q.created_at
+                FROM QualityImprovement q
+                JOIN Users u ON q.user_id = u.id
+                WHERE q.user_id = %s
+                ORDER BY q.created_at DESC;
+            """
+            cursor.execute(query, (current_user['id'],))
+            items = cursor.fetchall()
+            return jsonify(items)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 # == Serve React App ==
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
