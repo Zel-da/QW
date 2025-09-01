@@ -129,6 +129,7 @@ def add_inspection(current_user):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Company ID
             company_name = data['company_name']
             cursor.execute("SELECT id FROM Companies WHERE company_name = %s", (company_name,))
             company = cursor.fetchone()
@@ -138,6 +139,7 @@ def add_inspection(current_user):
                 cursor.execute("INSERT INTO Companies (company_name) VALUES (%s) RETURNING id", (company_name,))
                 company_id = cursor.fetchone()['id']
 
+            # Product ID
             product_name = data['product_name']
             product_code = data['product_code']
             cursor.execute("SELECT id FROM Products WHERE product_code = %s", (product_code,))
@@ -148,6 +150,7 @@ def add_inspection(current_user):
                 cursor.execute("INSERT INTO Products (product_name, product_code) VALUES (%s, %s) RETURNING id", (product_name, product_code))
                 product_id = cursor.fetchone()['id']
 
+            # Insert Inspection
             params = (
                 company_id, product_id, current_user['id'],
                 data.get('inspected_quantity'), data.get('defective_quantity'),
