@@ -8,19 +8,14 @@ import AddInspectionModal from '../AddInspectionModal/AddInspectionModal.jsx';
 
 function ListSection({ user }) {
     // --- State 선언 ---
-
-    // 1. API로부터 받아온 원본 데이터 전체를 저장할 State
     const [allInspections, setAllInspections] = useState([]);
-    // 2. 필터링된 후 화면에 실제로 보여줄 데이터를 저장할 State
     const [filteredInspections, setFilteredInspections] = useState([]);
-    // 3. 각 필터의 현재 선택값을 저장할 State
     const [filters, setFilters] = useState({
         manager: 'all',
         company: 'all',
         partName: 'all',
         status: 'all',
     });
-    // 4. 필터 드롭다운에 표시할 옵션 목록을 저장할 State
     const [filterOptions, setFilterOptions] = useState({
         managers: [],
         companies: [],
@@ -32,7 +27,7 @@ function ListSection({ user }) {
     const handleOpenModal = () => {
         if (!user) {
             alert('로그인이 필요합니다.');
-            return; // 로그인 안했으면 함수 종료
+            return;
         }
         setIsModalOpen(true);
     };
@@ -46,24 +41,36 @@ function ListSection({ user }) {
     // --- 데이터 로딩 및 필터 옵션 생성 ---
     useEffect(() => {
         const fetchData = async () => {
-            const data = await getInspections();
-            setAllInspections(data);
-            setFilteredInspections(data);
+            try {
+                const data = await getInspections();
+                setAllInspections(data);
+                setFilteredInspections(data);
 
-            // 데이터로부터 중복 없는 필터 옵션 목록을 동적으로 생성
-            const managers = [...new Set(data.map(item => item.manager))];
-            const companies = [...new Set(data.map(item => item.company))];
-            const partNames = [...new Set(data.map(item => item.partName))];
+                // 데이터로부터 중복 없는 필터 옵션 목록을 동적으로 생성
+                const managers = [...new Set(data.map(item => item.manager))];
+                const companies = [...new Set(data.map(item => item.company))];
+                const partNames = [...new Set(data.map(item => item.partName))];
 
-            setFilterOptions(prevOptions => ({
-                ...prevOptions,
-                managers: ['all', ...managers],
-                companies: ['all', ...companies],
-                partNames: ['all', ...partNames],
-            }));
+                setFilterOptions(prevOptions => ({
+                    ...prevOptions,
+                    managers: ['all', ...managers],
+                    companies: ['all', ...companies],
+                    partNames: ['all', ...partNames],
+                }));
+            } catch (error) {
+                console.error("Failed to fetch inspections:", error);
+                setAllInspections([]); // Clear data on error
+            }
         };
-        fetchData();
-    }, []); // 컴포넌트가 처음 마운트될 때 한 번만 실행
+
+        // 로그인 상태일 때만 데이터를 가져옴
+        if (user) {
+            fetchData();
+        } else {
+            // 로그아웃 상태이면 목록을 비움
+            setAllInspections([]);
+        }
+    }, [user]); // user 상태가 변경될 때마다 (로그인/로그아웃 시) 이 효과가 다시 실행됨
 
     // --- 필터링 로직 ---
     useEffect(() => {
