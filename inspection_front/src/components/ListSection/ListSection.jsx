@@ -13,11 +13,13 @@ function ListSection({ user }) {
         username: 'all',
         company_name: 'all',
         product_name: 'all',
+        status: 'all', // 상태 필터 추가
     });
     const [filterOptions, setFilterOptions] = useState({
         usernames: [],
         company_names: [],
         product_names: [],
+        statuses: ['all', 'inProgress', 'delayed', 'completed'], // 상태 필터 옵션
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,32 +31,23 @@ function ListSection({ user }) {
         setIsModalOpen(true);
     };
 
-    const handleSuccess = () => {
-        // 데이터 추가/수정 성공 시, 목록을 다시 불러옴
-        fetchData();
-    };
-
     const fetchData = async () => {
         try {
             const data = await getInspections();
             setAllInspections(data);
-            setFilteredInspections(data);
-
-            // 데이터로부터 중복 없는 필터 옵션 목록을 동적으로 생성
+            // 필터 옵션 생성
             const usernames = [...new Set(data.map(item => item.username))];
             const company_names = [...new Set(data.map(item => item.company_name))];
             const product_names = [...new Set(data.map(item => item.product_name))];
-
-            setFilterOptions(prevOptions => ({
-                ...prevOptions,
-                usernames: ['all', ...usernames],
-                company_names: ['all', ...company_names],
-                product_names: ['all', ...product_names],
-            }));
+            setFilterOptions(prev => ({ ...prev, usernames: ['all', ...usernames], company_names: ['all', ...company_names], product_names: ['all', ...product_names] }));
         } catch (error) {
             console.error("Failed to fetch inspections:", error);
             setAllInspections([]);
         }
+    };
+
+    const handleSuccess = () => {
+        fetchData();
     };
 
     useEffect(() => {
@@ -64,6 +57,17 @@ function ListSection({ user }) {
             setAllInspections([]);
         }
     }, [user]);
+
+    const getStatus = (item) => {
+        // 오늘 날짜를 YYYY-MM-DD 형식으로, 시간은 제외하고 비교
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const targetDate = new Date(item.target_date);
+
+        if (item.progress_percentage === 100) return 'completed';
+        if (targetDate < today) return 'delayed';
+        return 'inProgress';
+    };
 
     useEffect(() => {
         let result = allInspections;
@@ -77,22 +81,28 @@ function ListSection({ user }) {
         if (filters.product_name !== 'all') {
             result = result.filter(item => item.product_name === filters.product_name);
         }
+        // 상태 필터 로직 추가
+        if (filters.status !== 'all') {
+            result = result.filter(item => getStatus(item) === filters.status);
+        }
 
         setFilteredInspections(result);
     }, [filters, allInspections]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value,
-        }));
+        setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    const getStatus = (item) => {
-        if (item.progress_percentage === 100) return { text: '완료', className: styles.completed };
-        if (new Date(item.target_date) < new Date()) return { text: '지연', className: styles.delayed };
-        return { text: '진행중', className: styles.inProgress };
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        return dateString.replaceAll('-', '.');
+    };
+
+    const statusMap = {
+        inProgress: { text: '진행중', className: styles.inProgress },
+        completed: { text: '완료', className: styles.completed },
+        delayed: { text: '지연', className: styles.delayed },
     };
 
     return (
@@ -114,6 +124,17 @@ function ListSection({ user }) {
                         <select name="product_name" value={filters.product_name} onChange={handleFilterChange}>
                             {filterOptions.product_names.map(option => (
                                 <option key={option} value={option}>{option === 'all' ? '제품 전체' : option}</option>
+                            ))}
+                        </select>
+                        {/* 상태 필터 드롭다운 추가 */}
+                        <select name="status" value={filters.status} onChange={handleFilterChange}>
+                            {filterOptions.statuses.map(option => (
+                                <option key={option} value={option}>
+                                    {option === 'all' && '상태 전체'}
+                                    {option === 'inProgress' && '진행중'}
+                                    {option === 'delayed' && '지연'}
+                                    {option === 'completed' && '완료'}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -139,7 +160,7 @@ function ListSection({ user }) {
                     </thead>
                     <tbody>
                         {filteredInspections.map((item) => {
-                            const status = getStatus(item);
+                            const statusInfo = statusMap[getStatus(item)] || {};
                             return (
                                 <tr key={item.id}>
                                     <td>{item.username}</td>
@@ -148,7 +169,7 @@ function ListSection({ user }) {
                                     <td>{`${item.defective_quantity} / ${item.inspected_quantity}`}</td>
                                     <td>{item.defect_reason}</td>
                                     <td>{item.solution}</td>
-                                    <td>{item.target_date}</td>
+                                    <td>{formatDate(item.target_date)}</td>
                                     <td>
                                         <div className={styles.progressBarContainer}>
                                             <div className={styles.progressBar} style={{ width: `${item.progress_percentage}%` }}></div>
@@ -156,8 +177,8 @@ function ListSection({ user }) {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={`${styles.statusTag} ${status.className}`}>
-                                            {status.text}
+                                        <span className={`${styles.statusTag} ${statusInfo.className}`}>
+                                            {statusInfo.text}
                                         </span>
                                     </td>
                                 </tr>
