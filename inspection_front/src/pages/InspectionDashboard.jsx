@@ -1,11 +1,30 @@
 // src/pages/InspectionDashboard.jsx
 
-import React from 'react';
-// import KpiSection from '../components/KpiSection/KpiSection.jsx'; // 빌드 오류로 인해 임시 비활성화
+import React, { useEffect } from 'react';
+import api from '../api'; // Import the centralized api instance
+// import KpiSection from '../components/KpiSection/KpiSection.jsx'; // Temporarily disabled
 import ListSection from '../components/ListSection/ListSection.jsx';
 import styles from './InspectionDashboard.module.css'; // 페이지 전용 CSS 모듈 import
 
 function InspectionDashboard({ user }) {
+
+    // DEBUG: Add a useEffect to call the debug endpoint
+    useEffect(() => {
+        const debugRequest = async () => {
+            if (user) { // Only run if logged in
+                try {
+                    console.log("Sending request to /debug-headers...");
+                    const response = await api.get('/debug-headers');
+                    console.log("Response from /debug-headers:", response.data);
+                } catch (error) {
+                    console.error("Error calling /debug-headers:", error);
+                }
+            }
+        };
+
+        debugRequest();
+    }, [user]); // Rerun when user state changes
+
     return (
         <>
             <div className={styles.contentTitleArea}>

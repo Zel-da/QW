@@ -14,8 +14,7 @@ load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
-# --- CORS 설정 (진짜 최종) ---
-# .vercel.app으로 끝나는 모든 서브도메인을 허용하고, 필요한 헤더를 명시적으로 허용
+# --- CORS 설정 ---
 vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
 CORS(
     app,
@@ -33,8 +32,21 @@ def get_db_connection():
         conn = pyodbc.connect(DATABASE_URI)
         return conn
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"Database connection error: {e}", flush=True)
         return None
+
+# == 디버깅용 엔드포인트 ==
+@app.route('/debug-headers')
+@token_required # 동일한 조건으로 테스트하기 위해 데코레이터 유지
+def debug_headers(current_user):
+    print("--- DEBUG HEADERS ENDPOINT CALLED SUCCESSFULLY ---", flush=True)
+    print(f"Request Headers: {request.headers}", flush=True)
+    print(f"Decoded User from Token: {current_user}", flush=True)
+    return jsonify({
+        "message": "Debug successful",
+        "received_headers": dict(request.headers),
+        "decoded_user": current_user
+    })
 
 # == JWT Token Decorator ==
 def token_required(f):
@@ -53,14 +65,15 @@ def token_required(f):
             secret = app.config['SECRET_KEY']
             data = jwt.decode(token, secret, algorithms=["HS256"])
             current_user = {'id': data['user_id'], 'username': data['username']}
-        except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token has expired!'}), 401
         except Exception as e:
-            return jsonify({'message': 'Token is invalid!'}), 401
+            # In case of any decode error, return invalid
+            return jsonify({'message': f'Token is invalid! Error: {e}'}), 401
 
         return f(current_user, *args, **kwargs)
 
     return decorated
+
+# ... (rest of the app.py file is the same) ...
 
 # == User Authentication Endpoints ==
 @app.route('/login', methods=['POST'])
