@@ -4,10 +4,11 @@ import styles from '../AddInspectionModal/AddInspectionModal.module.css'; // Reu
 
 function AddQualityItemModal({ user, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        category: '공정', // Default category
-        status: 'Open' // Default status
+        company_name: '',
+        item_description: '',
+        start_date: new Date().toISOString().split('T')[0], // Default to today
+        end_date: '',
+        status: 'inProgress', // Default status
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -19,8 +20,8 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.title || !formData.description) {
-            setError('제목과 상세 설명은 필수 항목입니다.');
+        if (!formData.company_name || !formData.item_description || !formData.start_date) {
+            setError('업체명, 개선항목, 시작일은 필수 항목입니다.');
             return;
         }
         setIsSubmitting(true);
@@ -28,16 +29,18 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
         try {
             // The payload now matches the backend API
             const payload = {
-                title: formData.title,
-                description: formData.description,
-                category: formData.category,
+                company_name: formData.company_name,
+                item_description: formData.item_description,
+                start_date: formData.start_date,
+                end_date: formData.end_date || null, // Send null if empty
                 status: formData.status,
+                progress: 0, // Default progress
             };
-            await qualityApi.addQualityItem(payload);
+            await qualityApi.addQualityItem(payload); // Use the existing function name
             onSuccess(); // Re-fetch data on the parent component
             onClose();
         } catch (err) {
-            setError(err.message || "제출에 실패했습니다.");
+            setError(err.response?.data?.message || err.message || "제출에 실패했습니다.");
         } finally {
             setIsSubmitting(false);
         }
@@ -49,28 +52,27 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                 <h3>새 품질 개선 항목 등록</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.fullWidth}>
-                        <label>제목</label>
-                        <input type="text" name="title" value={formData.title} onChange={handleChange} required />
+                        <label>업체명</label>
+                        <input type="text" name="company_name" value={formData.company_name} onChange={handleChange} required />
                     </div>
                     <div className={styles.fullWidth}>
-                        <label>상세 설명</label>
-                        <textarea name="description" value={formData.description} onChange={handleChange} rows="5" required />
+                        <label>개선항목 (상세 설명)</label>
+                        <textarea name="item_description" value={formData.item_description} onChange={handleChange} rows="5" required />
                     </div>
                     <div>
-                        <label>분류</label>
-                        <select name="category" value={formData.category} onChange={handleChange}>
-                            <option value="공정">공정</option>
-                            <option value="자재">자재</option>
-                            <option value="작업방식">작업방식</option>
-                            <option value="기타">기타</option>
-                        </select>
+                        <label>시작일</label>
+                        <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} required />
+                    </div>
+                    <div>
+                        <label>마감일</label>
+                        <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} />
                     </div>
                     <div>
                         <label>상태</label>
                         <select name="status" value={formData.status} onChange={handleChange}>
-                            <option value="Open">Open</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
+                            <option value="inProgress">진행중</option>
+                            <option value="completed">완료</option>
+                            <option value="delayed">지연</option>
                         </select>
                     </div>
                     {error && <p className={styles.error}>{error}</p>}

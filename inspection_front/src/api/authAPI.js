@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 
 export const login = async (username, password) => {
   try {
-    const response = await api.post('/login', { username, password });
+    const response = await api.post('/api/login', { username, password });
     if (response.data.token) {
       const token = response.data.token;
       localStorage.setItem('token', token);

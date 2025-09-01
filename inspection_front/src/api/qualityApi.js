@@ -48,7 +48,7 @@ const qualityApi = {
   // DELETE a quality improvement item
   deleteQualityImprovement: async (id) => {
     try {
-      const response = await api.delete(`/quality-improvements/${id}`);
+      const response = await api.delete(`/api/quality-improvements/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Failed to delete quality improvement item ${id}:`, error);

@@ -60,7 +60,7 @@ def token_required(f):
     return decorated
 
 # == User Authentication Endpoints ==
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
     username = data.get('username')
@@ -95,7 +95,7 @@ def login():
         if conn: conn.close()
 
 # == Inspections Endpoints ==
-@app.route('/inspections', methods=['GET'])
+@app.route('/api/inspections', methods=['GET'])
 @token_required
 def get_inspections(current_user):
     conn = get_db_connection()
@@ -120,7 +120,7 @@ def get_inspections(current_user):
     finally:
         if conn: conn.close()
 
-@app.route('/my-inspections', methods=['GET'])
+@app.route('/api/my-inspections', methods=['GET'])
 @token_required
 def get_my_inspections(current_user):
     conn = get_db_connection()
@@ -146,7 +146,7 @@ def get_my_inspections(current_user):
     finally:
         if conn: conn.close()
 
-@app.route('/inspections', methods=['POST'])
+@app.route('/api/inspections', methods=['POST'])
 @token_required
 def add_inspection(current_user):
     data = request.get_json()
@@ -279,7 +279,7 @@ def delete_inspection(current_user, id):
     finally:
         if conn: conn.close()
 
-@app.route('/companies', methods=['GET'])
+@app.route('/api/companies', methods=['GET'])
 @token_required
 def get_companies(current_user):
     conn = get_db_connection()
@@ -373,7 +373,7 @@ def add_quality_improvement(current_user):
     finally:
         if conn: conn.close()
 
-@app.route('/quality-improvements/<int:id>', methods=['GET'])
+@app.route('/api/quality-improvements/<int:id>', methods=['GET'])
 @token_required
 def get_quality_improvement_detail(current_user, id):
     conn = get_db_connection()
@@ -397,7 +397,7 @@ def get_quality_improvement_detail(current_user, id):
     finally:
         if conn: conn.close()
 
-@app.route('/quality-improvements/<int:id>', methods=['PUT'])
+@app.route('/api/quality-improvements/<int:id>', methods=['PUT'])
 @token_required
 def update_quality_improvement(current_user, id):
     data = request.get_json()
@@ -434,7 +434,7 @@ def update_quality_improvement(current_user, id):
     finally:
         if conn: conn.close()
 
-@app.route('/quality-improvements/<int:id>', methods=['DELETE'])
+@app.route('/api/quality-improvements/<int:id>', methods=['DELETE'])
 @token_required
 def delete_quality_improvement(current_user, id):
     conn = get_db_connection()
@@ -459,7 +459,7 @@ def delete_quality_improvement(current_user, id):
     finally:
         if conn: conn.close()
 
-@app.route('/my-quality-improvements', methods=['GET'])
+@app.route('/api/my-quality-improvements', methods=['GET'])
 @token_required
 def get_my_quality_improvements(current_user):
     conn = get_db_connection()

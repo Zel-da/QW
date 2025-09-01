@@ -52,7 +52,7 @@ export const updateInspection = async (id, inspectionData) => {
 
 export const deleteInspection = async (id) => {
   try {
-    const response = await api.delete(`/inspections/${id}`);
+    const response = await api.delete(`/api/inspections/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Failed to delete inspection ${id}:`, error);
