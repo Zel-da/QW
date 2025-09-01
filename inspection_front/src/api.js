@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const api = axios.create({
   // Use the environment variable for the API URL
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000',
 });
 
 // Add a request interceptor to include the token in headers

@@ -3,7 +3,7 @@ import styles from './QualityImprovement.module.css';
 import qualityApi from '../api/qualityApi.js';
 import KpiPieChart from '../components/KpiPieChart.jsx';
 import AddQualityItemModal from '../components/AddQualityItemModal/AddQualityItemModal.jsx';
-import QualityDetailModal from '../components/QualityDetailModal/QualityDetailModal.jsx'; // Renamed from QualityImprovementDetailModal for consistency
+import QualityDetailModal from '../components/QualityDetailModal/QualityImprovementDetailModal.jsx';
 import { FaPlus } from 'react-icons/fa';
 
 // --- KPI Section --- //
