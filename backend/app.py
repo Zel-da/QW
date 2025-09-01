@@ -14,12 +14,13 @@ load_dotenv()
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inspection_front', 'dist'))
 
-# --- CORS 설정 (디버깅용) ---
-# 특정 Vercel 주소 하나만 명시적으로 허용
+# --- CORS 설정 (진짜 최종) ---
+# .vercel.app으로 끝나는 모든 서브도메인을 허용하고, 필요한 헤더를 명시적으로 허용
+vercel_origin_pattern = re.compile(r"https://.*\.vercel\.app")
 CORS(
-    app, 
-    origins=["https://qw-jm1f8ijam-ahnyejuns-projects.vercel.app"], 
-    supports_credentials=True, 
+    app,
+    origins=vercel_origin_pattern,
+    supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"]
 )
 # --- CORS 설정 끝 ---
