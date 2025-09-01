@@ -4,7 +4,7 @@ const qualityApi = {
   // GET all quality improvement items
   getQualityImprovements: async () => {
     try {
-      const response = await api.get('/quality-improvements');
+      const response = await api.get('/api/quality-improvements');
       return response.data;
     } catch (error) {
       console.error("Failed to fetch quality improvements:", error);
@@ -26,7 +26,7 @@ const qualityApi = {
   // POST a new quality improvement item
   addQualityItem: async (itemData) => {
     try {
-      const response = await api.post('/quality-improvements', itemData);
+      const response = await api.post('/api/quality-improvements', itemData);
       return response.data;
     } catch (error) {
       console.error("Failed to add quality improvement item:", error);

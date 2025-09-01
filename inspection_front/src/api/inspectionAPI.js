@@ -12,7 +12,7 @@ export const getInspections = async () => {
 
 export const getMyInspections = async () => {
   try {
-    const response = await api.get('/my-inspections');
+    const response = await api.get('/api/my-inspections');
     return response.data;
   } catch (error) {
     console.error("Failed to fetch my inspections:", error);
