@@ -115,8 +115,14 @@ function QualityImprovement({ user }) {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (user) {
+            fetchData();
+        } else {
+            // 로그인하지 않은 경우, 로딩을 멈추고 데이터를 비웁니다.
+            setIsLoading(false);
+            setAllItems([]);
+        }
+    }, [user]); // user 상태가 변경될 때마다 이 로직이 다시 실행됩니다.
 
     const handleRowClick = async (id) => {
         try {
