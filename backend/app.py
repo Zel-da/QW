@@ -112,6 +112,7 @@ def get_inspections(current_user):
                 JOIN Products p ON i.product_id = p.id
                 ORDER BY i.created_at DESC;
             """
+            print(f"Executing query: {query}", flush=True)
             cursor.execute(query)
             inspections = cursor.fetchall()
             return jsonify(inspections)
@@ -138,6 +139,7 @@ def get_my_inspections(current_user):
                 WHERE i.user_id = %s
                 ORDER BY i.created_at DESC;
             """
+            print(f"Executing query: {query} with params: {current_user['id']}", flush=True)
             cursor.execute(query, (current_user['id'],))
             inspections = cursor.fetchall()
             return jsonify(inspections)
@@ -212,6 +214,7 @@ def get_inspection_detail(current_user, id):
                 JOIN Products p ON i.product_id = p.id
                 WHERE i.id = %s;
             """
+            print(f"Executing query: {query} with id: {id}", flush=True)
             cursor.execute(query, (id,))
             inspection = cursor.fetchone()
             if not inspection:
@@ -791,6 +794,30 @@ def delete_user(current_user, id):
         if conn: conn.close()
 
 # == Serve React App ==
+@app.route('/api/debug/inspections-schema', methods=['GET'])
+@token_required
+def debug_inspections_schema(current_user):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Query to get column names and types for the Inspections table
+            query = """
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = 'inspections'
+                ORDER BY ordinal_position;
+            """
+            print(f"Executing debug query: {query}", flush=True)
+            cursor.execute(query)
+            columns = cursor.fetchall()
+            return jsonify(columns)
+    except Exception as e:
+        print(f"Error in debug_inspections_schema: {e}", flush=True)
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
