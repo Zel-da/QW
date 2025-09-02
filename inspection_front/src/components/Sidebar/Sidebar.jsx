@@ -12,6 +12,11 @@ function Sidebar({ user, onClose }) { // user prop을 받도록 수정
         <FaTimes />
       </button>
       
+      {/* Transparent box with background image */}
+      <div className={styles.sidebarImageBox}>
+        {/* You can set the background image in Sidebar.module.css */}
+        {/* Example: background-image: url('../../assets/your_image.png'); */}
+      </div>
       <ul className={styles.navMenu}>
         <li className={`${styles.navItem} ${location.pathname === '/' ? styles.active : ''}`}>
           <Link to="/"><FaClipboardList /><span>출장검사 현황</span></Link>
