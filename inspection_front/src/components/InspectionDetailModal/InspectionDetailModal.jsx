@@ -4,6 +4,7 @@ import { deleteInspection } from '../../api/inspectionAPI';
 import CommentSection from '../CommentSection/CommentSection.jsx';
 import EditInspectionModal from '../EditInspectionModal/EditInspectionModal.jsx';
 import styles from './InspectionDetailModal.module.css';
+import { calculateStatus, statusMap } from '../../utils';
 
 const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
   const [histories, setHistories] = useState([]);
@@ -121,6 +122,11 @@ const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
                         <label>마감일</label>
                         <p>{formatDate(item.target_date)}</p>
                     </div>
+                </div>
+                {/* Calculated Status */}
+                <div className={styles.detailFullWidth}>
+                    <label>상태</label>
+                    <p>{statusMap[calculateStatus(item.progress_percentage, item.target_date)]?.text || '-'}</p>
                 </div>
             </div>
 

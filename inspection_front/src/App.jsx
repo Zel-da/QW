@@ -9,11 +9,13 @@ import MyPosts from './pages/MyPosts.jsx';
 import UserManagement from './pages/UserManagement.jsx';
 import './index.css';
 import styles from './App.module.css';
+import { subscribeToLoading } from './api/api.js'; // Import subscribeToLoading
 
 const AppContent = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [globalLoadingState, setGlobalLoadingState] = useState({ isLoading: false, isColdStarting: false, loadingMessage: '' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,6 +37,10 @@ const AppContent = () => {
       setIsLoginModalOpen(true); // Open login modal if no token
     }
     setIsLoading(false); // Finished initial auth check
+
+    // Subscribe to global loading state changes
+    const unsubscribe = subscribeToLoading(setGlobalLoadingState);
+    return () => unsubscribe(); // Cleanup subscription
   }, []);
 
   const handleLoginSuccess = (userData) => {
@@ -55,13 +61,25 @@ const AppContent = () => {
 
   return (
     <>
+      {globalLoadingState.isLoading && (
+        <div className="global-loading-overlay">
+          <div className="global-loading-message">
+            {globalLoadingState.isColdStarting ? (
+              <p>{globalLoadingState.loadingMessage}</p>
+            ) : (
+              <p>로딩 중...</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {isLoginModalOpen && (
         <LoginModal
           onClose={() => {}} // Prevent closing modal by clicking outside when forced
           onLoginSuccess={handleLoginSuccess}
         />
       )}
-      <div className={styles.appContainer} style={{ filter: isLoginModalOpen ? 'blur(4px)' : 'none', pointerEvents: isLoginModalOpen ? 'none' : 'auto' }}>
+      <div className={styles.appContainer} style={{ filter: (isLoginModalOpen || globalLoadingState.isLoading) ? 'blur(4px)' : 'none', pointerEvents: (isLoginModalOpen || globalLoadingState.isLoading) ? 'none' : 'auto' }}>
         <Sidebar user={currentUser} />
         <main className={styles.mainContentContainer}>
           <Header

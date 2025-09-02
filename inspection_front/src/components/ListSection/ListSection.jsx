@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getInspectionById } from '../../api/inspectionAPI.js';
+import { calculateStatus, statusMap } from '../../utils';
 import styles from './ListSection.module.css';
 import { FaPlus } from 'react-icons/fa';
 import AddInspectionModal from '../AddInspectionModal/AddInspectionModal.jsx';
@@ -69,11 +70,7 @@ function ListSection({ user, inspections, onSuccess }) { // inspections를 prop�
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    const statusMap = {
-        inProgress: { text: '진행중', className: styles.inProgress },
-        completed: { text: '완료', className: styles.completed },
-        delayed: { text: '지연', className: styles.delayed },
-    };
+    
 
     return (
         <>
@@ -96,7 +93,8 @@ function ListSection({ user, inspections, onSuccess }) { // inspections를 prop�
                     </thead>
                     <tbody>
                         {filteredInspections.map((item) => {
-                            const statusInfo = statusMap[item.status] || {};
+                            const calculatedStatusKey = calculateStatus(item.progress_percentage, item.target_date);
+                            const statusInfo = statusMap[calculatedStatusKey] || {};
                             return (
                                 <tr key={item.id} onClick={() => handleRowClick(item.id)} className={styles.clickableRow}>
                                     <td>{item.username}</td>

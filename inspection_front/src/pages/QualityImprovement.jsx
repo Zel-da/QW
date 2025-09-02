@@ -5,15 +5,16 @@ import KpiPieChart from '../components/KpiPieChart.jsx';
 import AddQualityItemModal from '../components/AddQualityItemModal/AddQualityItemModal.jsx';
 import QualityDetailModal from '../components/QualityDetailModal/QualityImprovementDetailModal.jsx';
 import { FaPlus } from 'react-icons/fa';
+import { calculateStatus, statusMap } from '../utils';
 
 // --- KPI Section --- //
 function QualityKpiSection({ items, onKpiClick }) {
     const kpiData = useMemo(() => {
         return items.reduce((acc, item) => {
-            const status = item.status ? item.status.toLowerCase() : 'inprogress';
-            if (status.includes('completed')) acc.completed += 1;
-            else if (status.includes('progress')) acc.inProgress += 1;
-            else acc.delayed += 1;
+            const calculatedStatus = calculateStatus(item.progress, item.end_date); // Use calculated status
+            if (calculatedStatus === 'completed') acc.completed += 1;
+            else if (calculatedStatus === 'inProgress') acc.inProgress += 1;
+            else if (calculatedStatus === 'delayed') acc.delayed += 1;
             return acc;
         }, { completed: 0, inProgress: 0, delayed: 0 });
     }, [items]);
@@ -56,30 +57,28 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
     const [filters, setFilters] = useState({ username: 'all', company_name: 'all', status: 'all' });
     const [filterOptions, setFilterOptions] = useState({ usernames: [], company_names: [], statuses: [] });
 
-    const statusMap = {
-        inProgress: { text: '진행중', className: styles.inProgress },
-        completed: { text: '완료', className: styles.completed },
-        delayed: { text: '지연', className: styles.delayed },
-    };
+    
 
     useEffect(() => {
         const usernames = [...new Set(items.map(item => item.username))];
         const company_names = [...new Set(items.map(item => item.company_name))];
-        const statuses = [...new Set(items.map(item => item.status))];
+        // Calculate statuses dynamically for filter options
+        const calculatedStatuses = [...new Set(items.map(item => calculateStatus(item.progress, item.end_date)))];
         setFilterOptions({ 
             usernames: ['all', ...usernames],
             company_names: ['all', ...company_names],
-            statuses: ['all', ...statuses]
+            statuses: ['all', ...calculatedStatuses] // Use calculated statuses
         });
     }, [items]);
 
     const filteredItems = useMemo(() => {
         return items.filter(item => {
             const { username, company_name, status } = filters;
+            const itemCalculatedStatus = calculateStatus(item.progress, item.end_date); // Calculate status for each item
             return (
                 (username === 'all' || item.username === username) &&
                 (company_name === 'all' || item.company_name === company_name) &&
-                (status === 'all' || item.status === status)
+                (status === 'all' || itemCalculatedStatus === status) // Use calculated status for filtering
             );
         });
     }, [items, filters]);
@@ -114,7 +113,8 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                     </thead>
                     <tbody>
                         {filteredItems.map((item) => {
-                            const statusInfo = statusMap[item.status] || {};
+                            const calculatedStatusKey = calculateStatus(item.progress, item.end_date);
+                            const statusInfo = statusMap[calculatedStatusKey] || {};
                             return (
                                 <tr key={item.id} onClick={() => onRowClick(item.id)} className={styles.clickableRow}>
                                     <td>{item.username}</td>
@@ -188,7 +188,8 @@ function QualityImprovement({ user }) {
         if (statusFilter === 'all') {
             return allItems;
         }
-        return allItems.filter(item => (item.status || 'inProgress') === statusFilter);
+        // Calculate status for each item and filter based on that
+        return allItems.filter(item => calculateStatus(item.progress, item.end_date) === statusFilter);
     }, [statusFilter, allItems]);
 
     if (isLoading) return <div>로딩 중...</div>;

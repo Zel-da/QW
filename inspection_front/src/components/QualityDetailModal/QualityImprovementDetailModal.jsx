@@ -4,6 +4,7 @@ import qualityApi from '../../api/qualityApi';
 import CommentSection from '../CommentSection/CommentSection.jsx';
 import EditQualityItemModal from '../EditQualityItemModal/EditQualityItemModal.jsx';
 import styles from './QualityImprovementDetailModal.module.css';
+import { calculateStatus, statusMap } from '../../utils';
 
 const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
   const [histories, setHistories] = useState([]);
@@ -58,11 +59,7 @@ const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
       return new Date(dateString).toLocaleString();
   }
 
-  const statusMap = {
-    inProgress: '진행중',
-    completed: '완료',
-    delayed: '지연',
-  };
+  
 
   return (
     <>
@@ -105,7 +102,7 @@ const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
                 {/* 4열: 상태 */}
                 <div className={styles.detailFullWidth}>
                     <label>상태</label>
-                    <p>{statusMap[item.status] || item.status}</p>
+                    <p>{statusMap[calculateStatus(item.progress, item.end_date)]?.text || item.status}</p>
                 </div>
                 {/* 5열: 진행률 */}
                 <div className={styles.detailFullWidth}>
