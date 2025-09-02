@@ -3,8 +3,6 @@ import KpiPieChart from '../KpiPieChart.jsx';
 import styles from './KpiSection.module.css';
 import { calculateStatus } from '../../utils';
 
-import { calculateStatus } from '../../utils';
-
 function KpiSection({ inspections, onKpiClick }) {
     const kpiData = useMemo(() => {
         return inspections.reduce((acc, item) => {
