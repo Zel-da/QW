@@ -11,7 +11,7 @@ function EditInspectionModal({ item, onClose, onSuccess }) {
         defective_quantity: '',
         defect_reason: '',
         solution: '',
-        start_date: '',
+        received_date: '',
         target_date: '',
         progress_percentage: 0,
         status: 'inProgress',
@@ -28,7 +28,7 @@ function EditInspectionModal({ item, onClose, onSuccess }) {
                 defective_quantity: item.defective_quantity || '',
                 defect_reason: item.defect_reason || '',
                 solution: item.solution || '',
-                start_date: item.start_date ? new Date(item.start_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                received_date: item.received_date ? new Date(item.received_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                 target_date: item.target_date ? new Date(item.target_date).toISOString().split('T')[0] : '',
                 progress_percentage: item.progress_percentage || 0,
                 status: item.status || 'inProgress',
@@ -106,7 +106,7 @@ function EditInspectionModal({ item, onClose, onSuccess }) {
                     <div className={styles.formRow}>
                         <div>
                             <label>접수일</label>
-                            <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} />
+                            <input type="date" name="received_date" value={formData.received_date} onChange={handleChange} />
                         </div>
                         <div>
                             <label>마감일</label>

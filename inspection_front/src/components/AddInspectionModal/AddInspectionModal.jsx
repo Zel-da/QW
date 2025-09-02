@@ -11,7 +11,7 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
         defective_quantity: '',
         defect_reason: '',
         solution: '',
-        start_date: new Date().toISOString().split('T')[0],
+        received_date: new Date().toISOString().split('T')[0],
         target_date: '',
         progress_percentage: 0,
         status: 'inProgress',
@@ -88,7 +88,7 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
                     <div className={styles.formRow}>
                         <div>
                             <label>접수일</label>
-                            <input type="date" name="start_date" value={formData.start_date} disabled />
+                            <input type="date" name="received_date" value={formData.received_date} disabled />
                         </div>
                         <div>
                             <label>마감일</label>

@@ -103,7 +103,7 @@ def get_inspections(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, i.start_date,
+                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, i.received_date,
                        i.inspected_quantity, i.defective_quantity, i.status,
                        i.defect_reason, i.solution, i.target_date, i.progress_percentage, i.created_at
                 FROM Inspections i
@@ -128,7 +128,7 @@ def get_my_inspections(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, i.start_date,
+                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, i.received_date,
                        i.inspected_quantity, i.defective_quantity, i.status,
                        i.defect_reason, i.solution, i.target_date, i.progress_percentage, i.created_at
                 FROM Inspections i
@@ -180,11 +180,11 @@ def add_inspection(current_user):
                 company_id, product_id, current_user['id'],
                 data.get('inspected_quantity'), data.get('defective_quantity'),
                 data.get('defect_reason'), data.get('solution'), 
-                data.get('start_date'), data.get('target_date'), data.get('progress_percentage', 0),
+                data.get('received_date'), data.get('target_date'), data.get('progress_percentage', 0),
                 data.get('status', 'inProgress')
             )
             insert_query = """
-                INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, defect_reason, solution, start_date, target_date, progress_percentage, status)
+                INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, defect_reason, solution, received_date, target_date, progress_percentage, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, params)
@@ -205,7 +205,7 @@ def get_inspection_detail(current_user, id):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT i.*, u.username, c.company_name, p.product_name, p.product_code, i.start_date
+                SELECT i.*, u.username, c.company_name, p.product_name, p.product_code, i.received_date
                 FROM Inspections i
                 JOIN Users u ON i.user_id = u.id
                 JOIN Companies c ON i.company_id = c.id
@@ -235,7 +235,8 @@ def update_inspection(current_user, id):
         'defective_quantity': '불량수량',
         'defect_reason': '불량 원인',
         'solution': '해결 방안',
-        'target_date': '조치 목표일',
+        'received_date': '접수일',
+        'target_date': '마감일',
         'progress_percentage': '진행률',
         'status': '상태'
     }

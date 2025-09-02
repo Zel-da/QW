@@ -103,7 +103,7 @@ function ListSection({ user, inspections, onSuccess }) { // inspectionsë¥¼ propì
                                     <td>{`${item.inspected_quantity} / ${item.defective_quantity}`}</td>
                                     <td className={styles.truncate}>{item.defect_reason}</td>
                                     <td className={styles.truncate}>{item.solution}</td>
-                                    <td>{item.start_date ? new Date(item.start_date).toLocaleDateString() : '-'}</td>
+                                    <td>{item.start_date ? new Date(item.received_date).toLocaleDateString() : '-'}</td>
                                     <td>{item.target_date ? new Date(item.target_date).toLocaleDateString() : '-'}</td>
                                     <td>
                                         <div className={styles.progressBarContainer}>

@@ -116,7 +116,7 @@ const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
                 <div className={styles.detailRow}>
                     <div>
                         <label>접수일</label>
-                        <p>{formatDate(item.start_date)}</p>
+                        <p>{formatDate(item.received_date)}</p>
                     </div>
                     <div>
                         <label>마감일</label>
