@@ -7,23 +7,25 @@ import ChangePasswordModal from '../ChangePasswordModal/ChangePasswordModal.jsx'
 function Header({ user, onLoginClick, onLogout, onToggleSidebar }) {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   return (
-    <header className={styles.header}>
-      <button className={styles.sidebarToggleButton} onClick={onToggleSidebar}>
-        <FaBars />
-      </button>
-      {user ? (
-        <div className={styles.userInfo}>
-          <span>안녕하세요 {user.name}님</span>
-          <button onClick={onLogout} className={styles.logoutButton}>로그아웃</button>
-          <button onClick={() => setIsChangePasswordModalOpen(true)} className={styles.changePasswordButton}>비밀번호 변경</button>
-        </div>
-      ) : (
-        <button onClick={onLoginClick} className={styles.loginButton}>
-          로그인
+    <>
+      <header className={styles.header}>
+        <button className={styles.sidebarToggleButton} onClick={onToggleSidebar}>
+          <FaBars />
         </button>
-      )}
-    </header>
-    {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} />}
+        {user ? (
+          <div className={styles.userInfo}>
+            <span>안녕하세요 {user.name}님</span>
+            <button onClick={onLogout} className={styles.logoutButton}>로그아웃</button>
+            <button onClick={() => setIsChangePasswordModalOpen(true)} className={styles.changePasswordButton}>비밀번호 변경</button>
+          </div>
+        ) : (
+          <button onClick={onLoginClick} className={styles.loginButton}>
+            로그인
+          </button>
+        )}
+      </header>
+      {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} />}
+    </>
   );
 }
 
