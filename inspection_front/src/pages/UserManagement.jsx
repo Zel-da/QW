@@ -7,8 +7,11 @@ const UserManagement = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [newUser, setNewUser] = useState({ username: '', password: '' });
+    const [newUser, setNewUser] = useState({ username: '', password: '', team: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [editingTeam, setEditingTeam] = useState('');
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -31,6 +34,22 @@ const UserManagement = () => {
         setNewUser(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleEditClick = (user) => {
+        setEditingUserId(user.id);
+        setEditingTeam(user.team || '');
+    };
+
+    const handleUpdateUser = async (id) => {
+        try {
+            await updateUser(id, { team: editingTeam });
+            setEditingUserId(null); // Exit editing mode
+            setEditingTeam(''); // Clear editing state
+            await fetchUsers(); // Refresh user list
+        } catch (err) {
+            alert(`팀 업데이트 실패: ${err.message}`);
+        }
+    };
+
     const handleCreateUser = async (e) => {
         e.preventDefault();
         if (!newUser.username || !newUser.password) {
@@ -40,7 +59,7 @@ const UserManagement = () => {
         setIsSubmitting(true);
         try {
             await createUser(newUser);
-            setNewUser({ username: '', password: '' }); // Reset form
+            setNewUser({ username: '', password: '', team: '' }); // Reset form
             await fetchUsers(); // Refresh user list
         } catch (err) {
             alert(`사용자 추가 실패: ${err.message}`);
@@ -93,6 +112,14 @@ const UserManagement = () => {
                         className={styles.input}
                         required
                     />
+                    <input 
+                        type="text" 
+                        name="team" 
+                        placeholder="팀 (선택 사항)" 
+                        value={newUser.team} 
+                        onChange={handleInputChange} 
+                        className={styles.input}
+                    />
                     <button type="submit" className={styles.button} disabled={isSubmitting}>
                         {isSubmitting ? '추가 중...' : '사용자 추가'}
                     </button>
@@ -115,6 +142,7 @@ const UserManagement = () => {
                             <tr key={user.id}>
                                 <td>{user.id}</td>
                                 <td>{user.username}</td>
+                                <td>{user.team || '미지정'}</td>
                                 <td>{user.last_login ? new Date(user.last_login).toLocaleString() : 'N/A'}</td>
                                 <td>
                                     <button 

@@ -101,8 +101,40 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
+  margin-left: 8px;
 }
 
 .deleteButton:hover {
   background-color: #c9302c;
+}
+
+.editInput {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100px; /* Adjust as needed */
+}
+
+.editButton, .saveButton, .cancelButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 8px;
+}
+
+.editButton:hover, .saveButton:hover {
+  background-color: #0056b3;
+}
+
+.cancelButton {
+  background-color: #6c757d;
+}
+
+.cancelButton:hover {
+  background-color: #5a6268;
 }

@@ -32,3 +32,14 @@ export const deleteUser = async (id) => {
     throw new Error(error.response?.data?.message || '사용자 삭제에 실패했습니다.');
   }
 };
+
+// PUT (update) a user
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await api.put(`/api/users/${id}`, userData);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to update user ${id}:`, error);
+    throw new Error(error.response?.data?.message || '사용자 업데이트에 실패했습니다.');
+  }
+};

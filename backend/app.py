@@ -74,7 +74,7 @@ def login():
     
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute("SELECT id, password_hash FROM Users WHERE username = %s", (username,))
+            cursor.execute("SELECT id, password_hash, team FROM Users WHERE username = %s", (username,))
             user = cursor.fetchone()
 
             if user and sha256.verify(password, user['password_hash']):
@@ -838,6 +838,32 @@ def delete_user(current_user, id):
     finally:
         if conn: conn.close()
 
+@app.route('/api/users/<int:id>', methods=['PUT'])
+@token_required
+def update_user(current_user, id):
+    if not is_admin(current_user):
+        return jsonify({"message": "Permission denied"}), 403
+
+    data = request.get_json()
+    team = data.get('team')
+
+    if not team:
+        return jsonify({"message": "Team is required"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE users SET team = %s WHERE id = %s", (team, id))
+            conn.commit()
+            return jsonify({"message": "User updated successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 # == Serve React App ==
 @app.route('/api/debug/inspections-schema', methods=['GET'])
 @token_required
@@ -872,4 +898,5 @@ def serve(path):
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
+    app.run(debug=True, port=5000)'__main__':
     app.run(debug=True, port=5000)
