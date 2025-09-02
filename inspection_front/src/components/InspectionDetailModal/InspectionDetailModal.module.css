@@ -96,7 +96,9 @@
 .footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid #eee;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .footerButton {
@@ -153,4 +155,52 @@
 .historyUser {
   font-weight: bold;
   margin-right: 8px;
+}
+
+/* Progress Bar Styles */
+.progressContainer {
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.progressBar {
+    background-color: #28a745; /* Green color */
+    height: 20px;
+    border-radius: 5px;
+    transition: width 0.4s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+
+/* Footer Button Styles */
+.editButton, .deleteButton {
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+.editButton {
+    background-color: #007bff; /* Blue */
+}
+
+.editButton:hover {
+    background-color: #0056b3;
+}
+
+.deleteButton {
+    background-color: #dc3545; /* Red */
+}
+
+.deleteButton:hover {
+    background-color: #c82333;
 }
