@@ -1,4 +1,5 @@
 export const calculateStatus = (progress, targetDateStr) => {
+    console.log(`calculateStatus received: progress=${progress}, targetDateStr=${targetDateStr}`);
     if (progress === 100) {
         return 'completed';
     }
