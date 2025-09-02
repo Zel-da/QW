@@ -4,7 +4,7 @@ import { Pie } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import the plugin
 
 // Chart.js에 필요한 요소들을 등록합니다. (필수 과정)
-ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels); // Register the plugin
+ChartJS.register(ArcElement, Tooltip, Legend); // Register core elements, datalabels will be passed via options
 
 function KpiPieChart({ kpiData }) {
     // 차트에 표시할 데이터 설정
@@ -69,7 +69,7 @@ function KpiPieChart({ kpiData }) {
         },
     };
 
-    return <Pie data={data} options={options} />;
+    return <Pie data={data} options={options} plugins={[ChartDataLabels]} />;
 }
 
 export default KpiPieChart;
