@@ -152,6 +152,7 @@ def get_my_inspections(current_user):
 @token_required
 def add_inspection(current_user):
     data = request.get_json()
+    print(f"add_inspection received data: {data}", flush=True)
     conn = get_db_connection()
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
@@ -189,6 +190,8 @@ def add_inspection(current_user):
                 INSERT INTO Inspections (company_id, product_id, user_id, inspected_quantity, defective_quantity, defect_reason, solution, received_date, target_date, progress_percentage, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
+            print(f"add_inspection executing query: {insert_query}", flush=True)
+            print(f"add_inspection with params: {params}", flush=True)
             cursor.execute(insert_query, params)
             conn.commit()
             return jsonify({"message": "검수 데이터가 성공적으로 추가되었습니다."}), 201
