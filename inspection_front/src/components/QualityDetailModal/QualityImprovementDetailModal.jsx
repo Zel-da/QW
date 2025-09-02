@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import historyApi from '../../api/historyApi';
-import { deleteQualityImprovement } from '../../api/qualityApi';
+import qualityApi from '../../api/qualityApi';
 import CommentSection from '../CommentSection/CommentSection.jsx';
 import EditQualityItemModal from '../EditQualityItemModal/EditQualityItemModal.jsx';
 import styles from './QualityImprovementDetailModal.module.css';
@@ -32,7 +32,7 @@ const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
   const handleDelete = async () => {
     if (window.confirm('정말로 이 항목을 삭제하시겠습니까?')) {
       try {
-        await deleteQualityImprovement(item.id);
+        await qualityApi.deleteQualityImprovement(item.id);
         alert('삭제되었습니다.');
         onUpdate(); // Refresh the list
         onClose();
