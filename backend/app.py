@@ -94,6 +94,47 @@ def login():
     finally:
         if conn: conn.close()
 
+@app.route('/api/change-password', methods=['POST'])
+@token_required
+def change_password(current_user):
+    data = request.get_json()
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    confirm_new_password = data.get('confirm_new_password')
+
+    if not all([current_password, new_password, confirm_new_password]):
+        return jsonify({"message": "모든 필드를 입력해주세요."}), 400
+
+    if new_password != confirm_new_password:
+        return jsonify({"message": "새 비밀번호가 일치하지 않습니다."}), 400
+
+    if len(new_password) < 6:
+        return jsonify({"message": "새 비밀번호는 최소 6자 이상이어야 합니다."}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Verify current password
+            cursor.execute("SELECT password_hash FROM Users WHERE id = %s", (current_user['id'],))
+            user = cursor.fetchone()
+
+            if not user or not sha256.verify(current_password, user['password_hash']):
+                return jsonify({"message": "현재 비밀번호가 올바르지 않습니다."}), 401
+
+            # Hash and update new password
+            new_password_hash = sha256.hash(new_password)
+            cursor.execute("UPDATE Users SET password_hash = %s WHERE id = %s", (new_password_hash, current_user['id']))
+            conn.commit()
+            return jsonify({"message": "비밀번호가 성공적으로 변경되었습니다."}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in change_password: {e}", flush=True)
+        return jsonify({"message": f"비밀번호 변경 중 오류가 발생했습니다: {e}"}), 500
+    finally:
+        if conn: conn.close()
+
 # == Inspections Endpoints ==
 @app.route('/api/inspections', methods=['GET'])
 @token_required

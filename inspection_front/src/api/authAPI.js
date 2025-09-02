@@ -22,3 +22,13 @@ export const login = async (username, password) => {
 export const logout = () => {
   localStorage.removeItem('token');
 };
+
+export const changePassword = async (passwordData) => {
+  try {
+    const response = await api.post('/api/change-password', passwordData);
+    return response.data;
+  } catch (error) {
+    console.error("Password change failed:", error);
+    throw new Error(error.response?.data?.message || '비밀번호 변경에 실패했습니다.');
+  }
+};
