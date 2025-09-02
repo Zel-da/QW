@@ -11,7 +11,7 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
-  }
+  },
   build: { // Add this build configuration
     minify: false // Disable minification to keep console.log statements
   }
