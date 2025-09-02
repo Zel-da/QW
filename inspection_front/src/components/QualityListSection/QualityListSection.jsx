@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './QualityListSection.module.css';
 import { FaPlus, FaFilter } from 'react-icons/fa';
 import AddQualityItemModal from '../AddQualityItemModal/AddQualityItemModal.jsx';
-import QualityDetailModal from '../QualityDetailModal/QualityDetailModal.jsx';
+import QualityDetailModal from '../QualityDetailModal/QualityImprovementDetailModal.jsx';
 import FilterModal from '../FilterModal/FilterModal.jsx';
 import { calculateStatus, statusMap } from '../../utils';
 
