@@ -236,6 +236,7 @@ def update_inspection(current_user, id):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     
     # A dictionary to map field names to human-readable names
+    # A dictionary to map field names to human-readable names
     field_names = {
         'inspected_quantity': '검사수량',
         'defective_quantity': '불량수량',
@@ -355,6 +356,27 @@ def get_users(current_user):
 
 # == Quality Improvement Endpoints ==
 
+def calculate_status_py(progress, end_date):
+    if progress == 100:
+        return 'completed'
+    if end_date is None:
+        return 'inProgress'
+    
+    today = datetime.now().date()
+    
+    # If end_date is a string, convert it to a date object
+    if isinstance(end_date, str):
+        try:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            # Handle cases where the date format might be different or invalid
+            return 'inProgress' # Default to inProgress if date is malformed
+
+    if today > end_date:
+        return 'delayed'
+    else:
+        return 'inProgress'
+
 @app.route('/api/quality-improvements', methods=['GET'])
 @token_required
 def get_quality_improvements(current_user):
@@ -371,6 +393,8 @@ def get_quality_improvements(current_user):
             """
             cursor.execute(query)
             items = cursor.fetchall()
+            for item in items:
+                item['calculated_status'] = calculate_status_py(item['progress'], item['end_date'])
             return jsonify(items)
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
@@ -708,6 +732,22 @@ def get_histories(current_user, parent_type, parent_id):
 
 def is_admin(current_user):
     return current_user['username'] == 'test'
+
+@app.route('/api/debug/quality-improvements', methods=['GET'])
+@token_required
+def debug_quality_improvements(current_user):
+    conn = get_db_connection()
+    if not conn: return jsonify({"message": "Database connection failed"}), 500
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = "SELECT * FROM QualityImprovements;"
+            cursor.execute(query)
+            items = cursor.fetchall()
+            return jsonify(items)
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+    finally:
+        if conn: conn.close()
 
 @app.route('/api/users', methods=['GET'])
 @token_required
