@@ -32,7 +32,7 @@ function CommentSection({ user, parentId, parentType }) {
     if (!newComment.trim()) return;
 
     try {
-      const result = await commentApi.addComment({ content: newComment, parentId, parentType });
+      const result = await commentApi.addComment({ content: newComment, parent_id: parentId, parent_type: parentType });
       setComments([...comments, result.comment]);
       setNewComment('');
     } catch (err) {

@@ -249,7 +249,7 @@ def update_inspection(current_user, id):
             if not old_item:
                 return jsonify({"message": "Inspection not found"}), 404
             # Author verification
-            if old_item['user_id'] != current_user['id']:
+            if old_item['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
 
             # Step 2: Update the item
@@ -304,7 +304,7 @@ def delete_inspection(current_user, id):
             inspection = cursor.fetchone()
             if not inspection:
                 return jsonify({"message": "Inspection not found"}), 404
-            if inspection['user_id'] != current_user['id']:
+            if inspection['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
 
             cursor.execute("DELETE FROM Inspections WHERE id = %s", (id,))
@@ -457,7 +457,7 @@ def update_quality_improvement(current_user, id):
 
             if not old_item:
                 return jsonify({"message": "Item not found"}), 404
-            if old_item['user_id'] != current_user['id']:
+            if old_item['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
 
             # Step 2: Update the item
@@ -509,7 +509,7 @@ def delete_quality_improvement(current_user, id):
             item = cursor.fetchone()
             if not item:
                 return jsonify({"message": "Item not found"}), 404
-            if item['user_id'] != current_user['id']:
+            if item['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
             
             cursor.execute("DELETE FROM Comments WHERE parent_id = %s AND parent_type = 'quality'", (id,))
@@ -629,7 +629,7 @@ def update_comment(current_user, comment_id):
             comment = cursor.fetchone()
             if not comment:
                 return jsonify({"message": "Comment not found"}), 404
-            if comment['user_id'] != current_user['id']:
+            if comment['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
 
             cursor.execute(
@@ -657,7 +657,7 @@ def delete_comment(current_user, comment_id):
             comment = cursor.fetchone()
             if not comment:
                 return jsonify({"message": "Comment not found"}), 404
-            if comment['user_id'] != current_user['id']:
+            if comment['user_id'] != current_user['id'] and not is_admin(current_user):
                 return jsonify({"message": "Permission denied"}), 403
 
             cursor.execute("DELETE FROM Comments WHERE id = %s", (comment_id,))
