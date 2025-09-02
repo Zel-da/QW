@@ -22,3 +22,10 @@
     min-height: 0;
     /* 독립 스크롤을 위한 핵심 속성 */
 }
+
+.contentMainImage {
+    max-width: 100%; /* Ensure image is responsive */
+    height: auto; /* Maintain aspect ratio */
+    display: block; /* Remove extra space below image */
+    margin: 0 0 8px 0; /* Match margin of original h2 */
+}

@@ -49,7 +49,8 @@ function InspectionDashboard({ user }) {
     return (
         <>
             <div className={styles.contentTitleArea}>
-                <h2 className={styles.contentMainTitle}>외주업체 출장검사 현황</h2>
+                {/* Replace the h2 text with an image. Update the src path to your image. */}
+                <img src="../../assets/1.png" alt="외주업체 출장검사 현황" className={styles.contentMainImage} />
                 <p className={styles.contentSubTitle}>실시간으로 업체별 현황을 확인하세요.</p>
             </div>
             <div className={styles.scrollableContent}>
