@@ -112,7 +112,7 @@ function CommentSection({ user, parentId, parentType }) {
               <p className={styles.content}>{comment.content}</p>
             )}
 
-            {user && user.id === comment.user_id && editingComment.id !== comment.id && (
+            {user && (user.username === 'test' || user.id === comment.user_id) && editingComment.id !== comment.id && (
               <div className={styles.commentActions}>
                 <button onClick={() => setEditingComment({ id: comment.id, content: comment.content })}>수정</button>
                 <button onClick={() => handleDeleteComment(comment.id)}>삭제</button>

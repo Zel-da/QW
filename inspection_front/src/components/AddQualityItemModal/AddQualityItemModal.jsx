@@ -8,7 +8,7 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
         item_description: '',
         start_date: new Date().toISOString().split('T')[0], // Default to today
         end_date: '',
-        status: 'inProgress', // Default status
+        progress: 0, // Default progress
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -33,8 +33,7 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                 item_description: formData.item_description,
                 start_date: formData.start_date,
                 end_date: formData.end_date || null, // Send null if empty
-                status: formData.status,
-                progress: 0, // Default progress
+                progress: formData.progress, // Use form data progress
             };
             await qualityApi.addQualityItem(payload); // Use the existing function name
             onSuccess(); // Re-fetch data on the parent component
@@ -67,13 +66,9 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                         <label>마감일</label>
                         <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} />
                     </div>
-                    <div>
-                        <label>상태</label>
-                        <select name="status" value={formData.status} onChange={handleChange}>
-                            <option value="inProgress">진행중</option>
-                            <option value="completed">완료</option>
-                            <option value="delayed">지연</option>
-                        </select>
+                    <div className={styles.fullWidth}>
+                        <label>진행률: {formData.progress}%</label>
+                        <input type="range" name="progress" value={formData.progress} onChange={handleChange} min="0" max="100" step="5" className={styles.slider} style={{ '--progress-percent': `${formData.progress}%` }} />
                     </div>
                     {error && <p className={styles.error}>{error}</p>}
                     <div className={styles.formActions}>

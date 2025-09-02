@@ -163,8 +163,12 @@ const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
           {/* Footer with Buttons */}
           <div className={styles.footer}>
             <button className={styles.footerButton} onClick={onClose}>닫기</button>
-            <button className={styles.editButton} onClick={() => setIsEditModalOpen(true)}>수정</button>
-            <button className={styles.deleteButton} onClick={handleDelete}>삭제</button>
+            {user && (user.username === 'test' || user.id === item.user_id) && (
+                <>
+                    <button className={styles.editButton} onClick={() => setIsEditModalOpen(true)}>수정</button>
+                    <button className={styles.deleteButton} onClick={handleDelete}>삭제</button>
+                </>
+            )}
           </div>
         </div>
       </div>

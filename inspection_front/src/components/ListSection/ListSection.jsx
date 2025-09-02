@@ -91,7 +91,7 @@ function ListSection({ user, inspections, onSuccess }) { // inspections를 prop�
                 <table className={styles.inspectionTable}>
                     <thead>
                         <tr>
-                            <th>담당자</th><th>업체명</th><th>제품명</th><th>불량/검사 수량</th><th>불량사유</th><th>대처방안</th><th>목표일</th><th>진행률</th><th>상태</th>
+                            <th>담당자</th><th>업체명</th><th>제품명</th><th>검사/불량 수량</th><th>불량사유</th><th>대처방안</th><th>접수일</th><th>마감일</th><th>진행률</th><th>상태</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,9 +102,10 @@ function ListSection({ user, inspections, onSuccess }) { // inspections를 prop�
                                     <td>{item.username}</td>
                                     <td>{item.company_name}</td>
                                     <td>{item.product_name}</td>
-                                    <td>{`${item.defective_quantity} / ${item.inspected_quantity}`}</td>
+                                    <td>{`${item.inspected_quantity} / ${item.defective_quantity}`}</td>
                                     <td className={styles.truncate}>{item.defect_reason}</td>
                                     <td className={styles.truncate}>{item.solution}</td>
+                                    <td>{item.start_date ? new Date(item.start_date).toLocaleDateString() : '-'}</td>
                                     <td>{item.target_date ? new Date(item.target_date).toLocaleDateString() : '-'}</td>
                                     <td>
                                         <div className={styles.progressBarContainer}>

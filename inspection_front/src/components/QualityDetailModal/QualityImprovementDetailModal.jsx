@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import historyApi from '../../api/historyApi';
-import CommentSection from '../CommentSection/CommentSection.jsx'; // Import CommentSection
+import { deleteQualityImprovement } from '../../api/qualityApi';
+import CommentSection from '../CommentSection/CommentSection.jsx';
+import EditQualityItemModal from '../EditQualityItemModal/EditQualityItemModal.jsx';
 import styles from './QualityImprovementDetailModal.module.css';
 
-const QualityImprovementDetailModal = ({ item, onClose, user }) => { // Add user prop
+const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
   const [histories, setHistories] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -26,6 +29,25 @@ const QualityImprovementDetailModal = ({ item, onClose, user }) => { // Add user
 
   if (!item) return null;
 
+  const handleDelete = async () => {
+    if (window.confirm('정말로 이 항목을 삭제하시겠습니까?')) {
+      try {
+        await deleteQualityImprovement(item.id);
+        alert('삭제되었습니다.');
+        onUpdate(); // Refresh the list
+        onClose();
+      } catch (error) {
+        console.error('Failed to delete quality improvement item:', error);
+        alert(`삭제에 실패했습니다: ${error.message}`);
+      }
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false);
+    onUpdate(); // Refresh data in the detail view and the main list
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString();
@@ -36,58 +58,114 @@ const QualityImprovementDetailModal = ({ item, onClose, user }) => { // Add user
       return new Date(dateString).toLocaleString();
   }
 
+  const statusMap = {
+    inProgress: '진행중',
+    completed: '완료',
+    delayed: '지연',
+  };
+
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>품질 개선 상세 정보</h2>
-          <button className={styles.closeButton} onClick={onClose}>&times;</button>
-        </div>
-        <div className={styles.content}>
-          <div className={styles.grid}>
-            <div className={styles.gridItem}><strong>작성자:</strong> {item.username}</div>
-            <div className={styles.gridItem}><strong>업체명:</strong> {item.company_name}</div>
-            <div className={styles.gridItem}><strong>상태:</strong> {item.status}</div>
-            <div className={styles.gridItem}><strong>진행률:</strong> {item.progress}%</div>
-            <div className={styles.gridItem}><strong>시작일:</strong> {formatDate(item.start_date)}</div>
-            <div className={styles.gridItem}><strong>마감일:</strong> {formatDate(item.end_date)}</div>
+    <>
+      <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>품질 개선 상세 정보</h2>
+            <button className={styles.closeButton} onClick={onClose}>&times;</button>
           </div>
-          <div className={styles.fullWidthItem}>
-            <strong>개선 항목:</strong>
-            <p>{item.item_description || '-'}</p>
+          <div className={styles.content}>
+            {/* Basic Info Layout */}
+            <div className={styles.detailLayout}>
+                {/* 1열: 담당자 / 업체명 */}
+                <div className={styles.detailRow}>
+                    <div>
+                        <label>담당자</label>
+                        <p>{item.username}</p>
+                    </div>
+                    <div>
+                        <label>업체명</label>
+                        <p>{item.company_name}</p>
+                    </div>
+                </div>
+                {/* 2열: 개선 항목 */}
+                <div className={styles.detailFullWidth}>
+                    <label>개선 항목</label>
+                    <p>{item.item_description || '-'}</p>
+                </div>
+                {/* 3열: 시작일 / 마감일 */}
+                <div className={styles.detailRow}>
+                    <div>
+                        <label>시작일</label>
+                        <p>{formatDate(item.start_date)}</p>
+                    </div>
+                    <div>
+                        <label>마감일</label>
+                        <p>{formatDate(item.end_date)}</p>
+                    </div>
+                </div>
+                {/* 4열: 상태 */}
+                <div className={styles.detailFullWidth}>
+                    <label>상태</label>
+                    <p>{statusMap[item.status] || item.status}</p>
+                </div>
+                {/* 5열: 진행률 */}
+                <div className={styles.detailFullWidth}>
+                    <label>진행률</label>
+                    <div className={styles.progressContainer}>
+                        <div className={styles.progressBar} style={{ width: `${item.progress}%` }}>
+                            {item.progress}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 6열: 댓글 기능 */}
+            <CommentSection user={user} parentId={item.id} parentType="quality" />
+
+            {/* 7열: 수정 로그 */}
+            <div className={styles.historySection}>
+              <h4 className={styles.historyTitle}>수정 로그</h4>
+              {loadingHistory ? (
+                <p>내역 로딩 중...</p>
+              ) : (
+                <ul className={styles.historyList}>
+                  {histories.length > 0 ? (
+                    histories.map((log, index) => (
+                      <li key={index} className={styles.historyItem}>
+                        <span className={styles.historyDate}>({formatHistoryDate(log.created_at)})</span>
+                        <span className={styles.historyUser}>[{log.username}]</span>
+                        <span className={styles.historyAction}>{log.action}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <p>수정 내역이 없습니다.</p>
+                  )}
+                </ul>
+              )}
+            </div>
           </div>
 
-          {/* History Section */}
-          <div className={styles.historySection}>
-            <h4 className={styles.historyTitle}>수정 내역</h4>
-            {loadingHistory ? (
-              <p>내역 로딩 중...</p>
-            ) : (
-              <ul className={styles.historyList}>
-                {histories.length > 0 ? (
-                  histories.map((log, index) => (
-                    <li key={index} className={styles.historyItem}>
-                      <span className={styles.historyDate}>({formatHistoryDate(log.created_at)})</span>
-                      <span className={styles.historyUser}>[{log.username}]</span>
-                      <span className={styles.historyAction}>{log.action}</span>
-                    </li>
-                  ))
-                ) : (
-                  <p>수정 내역이 없습니다.</p>
-                )}
-              </ul>
+          {/* Footer with Buttons */}
+          <div className={styles.footer}>
+            <button className={styles.footerButton} onClick={onClose}>닫기</button>
+            {user && (user.username === 'test' || user.id === item.user_id) && (
+                <>
+                    <button className={styles.editButton} onClick={() => setIsEditModalOpen(true)}>수정</button>
+                    <button className={styles.deleteButton} onClick={handleDelete}>삭제</button>
+                </>
             )}
           </div>
-
-          {/* Comment Section */}
-          <CommentSection user={user} parentId={item.id} parentType="quality" />
-
-        </div>
-        <div className={styles.footer}>
-          <button className={styles.footerButton} onClick={onClose}>닫기</button>
         </div>
       </div>
-    </div>
+
+      {isEditModalOpen && (
+        <EditQualityItemModal
+          item={item}
+          user={user}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+    </>
   );
 };
 
