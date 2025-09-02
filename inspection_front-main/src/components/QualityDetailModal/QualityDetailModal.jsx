@@ -132,7 +132,10 @@ function QualityDetailModal({ item, user, onClose, onSuccess }) {
                                 <div><label>마감일</label><span>{item.endDate}</span></div>
                                 <div className={styles.fullWidth}><label>진행률</label>
                                     <div className={styles.progressBarContainer}>
-                                        <div className={styles.progressBar} style={{ width: `${item.progress}%` }}></div>
+
+                                        <div className={styles.progressBarWrapper}>
+                                            <div className={styles.progressBar} style={{ width: `${item.progress}%` }}></div>
+                                        </div>
                                         <span>{item.progress}%</span>
                                     </div>
                                 </div>

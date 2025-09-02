@@ -8,27 +8,24 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* ▼▼▼ 수정 1: justify-content: space-between; 속성을 삭제합니다. ▼▼▼ */
 .sectionHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
     gap: 16px;
-    /* 자식 요소들 사이의 간격 추가 */
 }
 
 .sectionHeader h2 {
     margin: 0;
     font-size: 1.5rem;
     flex-shrink: 0;
-    /* 줄어들지 않도록 */
 }
 
 .inspectionTable {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    /* 테이블 내용이 길어질 경우 ...으로 표시 */
     table-layout: fixed;
 }
 
@@ -37,7 +34,6 @@
     padding: 16px;
     border-bottom: 1px solid #e0e0e0;
     vertical-align: middle;
-    /* 셀 내용이 길어질 경우 ...으로 표시 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -57,23 +53,17 @@
 }
 
 .progressBarWrapper {
-    /* 새로운 래퍼(wrapper)를 추가합니다. */
     flex-grow: 1;
-    /* 텍스트를 제외한 모든 남는 공간을 차지 */
     height: 10px;
     background-color: #e9ecef;
-    /* 막대그래프의 배경색 */
     border-radius: 5px;
     overflow: hidden;
-    /* 자식 요소가 밖으로 나가지 않도록 */
 }
 
 .progressBar {
     height: 100%;
-    /* 부모 높이(10px)를 꽉 채움 */
     background-color: #a5d6a7;
     border-radius: 5px;
-    /* width는 이제 인라인 스타일로만 제어됩니다. */
 }
 
 .statusTag {
@@ -82,10 +72,8 @@
     font-weight: bold;
     font-size: 0.8rem;
     color: #3d405b;
-    /* 파스텔 배경과 대비가 좋은 어두운 색으로 변경 */
 }
 
-/* 상태 태그 파스텔 톤 색상 */
 .inProgress {
     background-color: #ffe082;
 }
@@ -98,11 +86,10 @@
     background-color: #ffab91;
 }
 
-.addButton {
+.desktopAddButton {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* 아이콘과 텍스트 사이 간격 */
     background-color: #007bff;
     color: white;
     border: none;
@@ -114,28 +101,24 @@
     transition: all 0.2s ease-in-out;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-left: auto;
-    /* 자동으로 왼쪽 마진을 최대로 하여 오른쪽으로 밀어냄 */
     flex-shrink: 0;
 }
 
-.addButton:hover {
+.desktopAddButton:hover {
     background-color: #0056b3;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
 
-
-/* 새로 추가하는 filters 스타일 */
-.filters {
+/* ▼▼▼ 수정 2: 클래스 이름을 .filters에서 .desktopFilters로 변경합니다. ▼▼▼ */
+.desktopFilters {
     display: flex;
     gap: 12px;
     flex-grow: 1;
-    /* 남는 공간을 모두 차지 */
     justify-content: flex-start;
-    /* 왼쪽부터 정렬 */
 }
 
-.filters select {
+.desktopFilters select {
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -146,7 +129,106 @@
 
 .clickableRow:hover {
     background-color: #f8f9fa;
-    /* 마우스를 올렸을 때 배경색 변경 */
     cursor: pointer;
-    /* 커서 모양 변경 */
+}
+
+
+/* 기본(데스크탑) 상태: 모바일용 요소 숨기기 */
+.mobileActions,
+.cardList {
+    display: none;
+}
+
+
+/* ======================================== */
+/* 모바일 반응형 (768px 이하) */
+/* ======================================== */
+@media (max-width: 768px) {
+
+    .desktopFilters,
+    .desktopAddButton,
+    .inspectionTable {
+        display: none;
+    }
+
+    .mobileActions,
+    .cardList {
+        display: flex;
+    }
+
+    .cardList {
+        display: block;
+    }
+
+    .sectionHeader {
+        flex-wrap: wrap;
+    }
+
+    .sectionHeader h2 {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .mobileActions {
+        margin-left: auto;
+        gap: 8px;
+    }
+
+    .mobileButton {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    .card {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: box-shadow 0.2s;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .cardRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .cardRow:last-child {
+        margin-bottom: 0;
+    }
+
+    .cardItem {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .cardLabel {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .cardValue {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .alignRight {
+        align-items: flex-end;
+    }
 }

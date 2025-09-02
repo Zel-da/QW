@@ -10,7 +10,8 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   /* 전체 페이지 스크롤 방지 */
 }
 

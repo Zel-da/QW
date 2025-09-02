@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react'; // useEffect import 추가
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
 import Header from './components/Header/Header.jsx';
 import InspectionDashboard from './pages/InspectionDashboard.jsx';
 import QualityImprovement from './pages/QualityImprovement.jsx';
+import MyPosts from './pages/MyPosts.jsx';
 import './index.css';
 import styles from './App.module.css';
-import MyPosts from './pages/MyPosts.jsx';
 
 function App() {
-  // 1. useState의 초기값을 localStorage에서 가져오도록 변경
+  // --- 로그인 상태 관리 ---
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
@@ -20,46 +20,79 @@ function App() {
     }
   });
 
-  // 2. currentUser가 변경될 때마다 localStorage에 자동으로 저장하는 useEffect 추가
   useEffect(() => {
     if (currentUser) {
-      // 사용자 정보가 있으면 localStorage에 저장
       localStorage.setItem('user', JSON.stringify(currentUser));
     } else {
-      // 사용자 정보가 없으면 (로그아웃 시) localStorage에서 삭제
       localStorage.removeItem('user');
     }
-  }, [currentUser]); // currentUser가 바뀔 때마다 이 효과가 실행됩니다.
+  }, [currentUser]);
 
-  // 로그인 성공 시 호출될 함수 (이제 state만 변경하면 useEffect가 알아서 저장)
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
   };
 
-  // 로그아웃 시 호출될 함수 (이제 state만 변경하면 useEffect가 알아서 삭제)
   const handleLogout = () => {
     setCurrentUser(null);
   };
 
+  // --- 사이드바 반응형 상태 관리 ---
+  const [isSidebarVisible, setIsSidebarVisible] = useState(window.innerWidth > 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsSidebarVisible(true);
+      } else {
+        // 화면이 작아지는 순간에는 사이드바를 닫는 것이
+        // 일반적인 사용자 경험에 더 좋습니다.
+        setIsSidebarVisible(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // 사이드바 닫기 함수
+  const closeSidebar = () => {
+    setIsSidebarVisible(false);
+  };
+
+  // 사이드바 열기/닫기 토글 함수
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
+  // ▼▼▼ 모바일 화면인지 실시간으로 확인하는 변수 ▼▼▼
+  // (useEffect 외부에서 상태를 감지하는 대신, 렌더링 시점에 확인)
+  const isMobile = () => window.innerWidth <= 768;
+
   return (
     <BrowserRouter>
       <div className={styles.appContainer}>
-        <Sidebar user={currentUser} />
+        {isSidebarVisible && <Sidebar user={currentUser} onClose={closeSidebar} />}
+
+        {/* ▼▼▼ 모바일이고, 사이드바가 열려있을 때만 백드롭 표시 ▼▼▼ */}
+        {isMobile() && isSidebarVisible && (
+          <div className={styles.sidebarBackdrop} onClick={closeSidebar}></div>
+        )}
+
         <main className={styles.mainContentContainer}>
           <Header
             user={currentUser}
             onLoginSuccess={handleLoginSuccess}
             onLogout={handleLogout}
+            onToggleSidebar={toggleSidebar}
           />
           <div className={styles.mainContent}>
             <Routes>
-
-              <Route path="/quality" element={<QualityImprovement user={currentUser} />} />
               <Route path="/" element={<InspectionDashboard user={currentUser} />} />
-              <Route path="/quality" element={<QualityImprovement />} />
+              <Route path="/quality" element={<QualityImprovement user={currentUser} />} />
               <Route path="/my-posts" element={<MyPosts user={currentUser} />} />
-
-
             </Routes>
           </div>
         </main>

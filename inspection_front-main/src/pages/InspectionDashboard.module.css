@@ -20,6 +20,7 @@
     flex-grow: 1;
     overflow-y: auto;
     min-height: 0;
+    min-width: 0;
     /* 독립 스크롤을 위한 핵심 속성 */
 }
 

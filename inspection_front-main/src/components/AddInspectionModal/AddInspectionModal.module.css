@@ -1,16 +1,14 @@
-/* src/components/AddInspectionModal/AddInspectionModal.module.css */
-
 .modalBackdrop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1300;
     backdrop-filter: blur(5px);
 }
 
@@ -29,49 +27,50 @@
 
 .modalContent h3 {
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 28px;
+    margin: 0 0 28px 0;
     font-size: 1.5rem;
     font-weight: 600;
 }
 
-.form {
-    overflow-y: auto;
-    padding: 4px;
-    /* 스크롤바 공간 확보 */
+.modalForm {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-/* 폼의 각 행(row) 스타일 */
+.form {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px 12px 4px 4px;
+    margin-right: -12px;
+}
+
 .formRow {
     display: flex;
     align-items: flex-start;
     margin-bottom: 16px;
 }
 
-/* 라벨 컨테이너 (왼쪽 영역) */
 .labelContainer {
     flex: 0 0 120px;
-    /* 120px 고정 너비, 늘어나거나 줄어들지 않음 */
     padding-top: 12px;
-    /* 입력창 높이에 맞춰 세로 중앙 정렬 효과 */
 }
 
 .labelContainer label {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: .95rem;
     color: #555;
 }
 
-/* 입력 필드 컨테이너 (오른쪽 영역) */
 .inputContainer {
     flex: 1;
-    /* 남은 공간을 모두 차지 */
 }
 
-/* 기본 입력 필드 스타일 */
-.modalContent input[type="text"],
-.modalContent input[type="number"],
-.modalContent input[type="date"],
+.modalContent input[type=text],
+.modalContent input[type=number],
+.modalContent input[type=date],
 .modalContent textarea {
     width: 100%;
     padding: 12px 14px;
@@ -80,7 +79,7 @@
     font-size: 1rem;
     box-sizing: border-box;
     background-color: #fcfcfc;
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: border-color .2s ease-in-out, box-shadow .2s ease-in-out;
 }
 
 .modalContent input:disabled {
@@ -91,31 +90,32 @@
 
 .modalContent input:focus,
 .modalContent textarea:focus {
-    outline: none;
+    outline: 0;
     border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, .2);
 }
 
-/* 한 줄에 2개 입력 필드 */
 .doubleInput {
     display: flex;
     gap: 12px;
 }
 
-/* 한 줄에 3개 입력 필드 */
+.doubleInput>input {
+    flex: 1;
+}
+
 .tripleInput {
     display: flex;
     gap: 12px;
 }
 
-/* 진행률 슬라이더 */
 .slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    outline: none;
+    outline: 0;
     cursor: pointer;
     background: linear-gradient(to right, #007aff var(--progress-percent, 0%), #e9e9e9 var(--progress-percent, 0%));
 }
@@ -125,14 +125,13 @@
     appearance: none;
     width: 18px;
     height: 18px;
-    background: white;
+    background: #fff;
     border-radius: 50%;
     border: 3px solid #007aff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
     margin-top: -2px;
 }
 
-/* 하단 버튼 */
 .formActions {
     display: flex;
     justify-content: flex-end;
@@ -150,7 +149,7 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all .2s ease-in-out;
 }
 
 .cancelButton {
@@ -160,7 +159,7 @@
 
 .submitButton {
     background-color: #007aff;
-    color: white;
+    color: #fff;
 }
 
 .submitButton:disabled {
@@ -168,21 +167,55 @@
     cursor: not-allowed;
 }
 
-/* 한 줄에 2개 입력 필드 */
-.doubleInput {
-    display: flex;
-    gap: 12px;
-}
-
-.doubleInput>input {
-    /* 자식 input들의 너비를 균등하게 설정 */
-    flex: 1;
-}
-
 .errorMessage {
     color: #e74c3c;
-    font-size: 0.9rem;
+    font-size: .9rem;
     margin-top: -8px;
-    /* 입력창과의 간격 조정 */
     margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .modalContent {
+        width: calc(100% - 24px);
+        max-height: 85vh;
+        padding: 24px 16px;
+    }
+
+    .modalContent h3 {
+        font-size: 1.25rem;
+        margin-bottom: 24px;
+    }
+
+    .formRow {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 20px;
+    }
+
+    .labelContainer {
+        flex: none;
+        width: 100%;
+        padding-top: 0;
+        margin-bottom: 8px;
+    }
+
+    .labelContainer label {
+        font-size: 0.9rem;
+    }
+
+    .doubleInput {
+        flex-direction: column;
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+
+    .cancelButton,
+    .submitButton {
+        width: 100%;
+    }
 }

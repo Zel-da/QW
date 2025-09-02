@@ -32,8 +32,20 @@ const mockQualityData = [
 
 // status를 동적으로 계산하는 함수
 const getStatus = (item) => {
-    if (item.progress === 100) return 'completed';
-    if (new Date(item.endDate) < new Date()) return 'delayed';
+    // 오늘 날짜의 시간을 자정으로 설정
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 마감일의 시간 정보도 자정으로 설정 (이미 날짜만 있는 문자열이라 영향이 적지만, 명확성을 위해)
+    const endDate = new Date(item.endDate);
+    endDate.setHours(0, 0, 0, 0);
+
+    // progress가 숫자형이 아닐 경우를 대비해 parseInt 사용
+    if (parseInt(item.progress, 10) === 100) return 'completed';
+
+    // 이제 날짜만 정확하게 비교합니다.
+    if (endDate < today) return 'delayed';
+
     return 'inProgress';
 };
 
@@ -96,14 +108,14 @@ export const getQualityHistory = (itemId) => {
 
 // addQualityComment 함수도 id를 추가하도록 수정
 export const addQualityComment = (itemId, newComment) => {
-  return new Promise(resolve => {
-    if (!mockQualityComments[itemId]) {
-      mockQualityComments[itemId] = [];
-    }
-    const commentWithId = { ...newComment, id: Date.now() }; // 고유 ID 추가
-    mockQualityComments[itemId].push(commentWithId);
-    setTimeout(() => resolve(commentWithId), 300);
-  });
+    return new Promise(resolve => {
+        if (!mockQualityComments[itemId]) {
+            mockQualityComments[itemId] = [];
+        }
+        const commentWithId = { ...newComment, id: Date.now() }; // 고유 ID 추가
+        mockQualityComments[itemId].push(commentWithId);
+        setTimeout(() => resolve(commentWithId), 300);
+    });
 };
 
 export const addQualityHistory = (itemId, newLog) => {
@@ -118,13 +130,13 @@ export const addQualityHistory = (itemId, newLog) => {
 
 // 맨 아래에 deleteQualityComment 함수 추가
 export const deleteQualityComment = (itemId, commentId) => {
-  return new Promise((resolve, reject) => {
-    if (mockQualityComments[itemId]) {
-        mockQualityComments[itemId] = mockQualityComments[itemId].filter(c => c.id !== commentId);
-        setTimeout(() => resolve({ success: true }), 300);
-    } else {
-        reject(new Error("해당 항목을 찾지 못했습니다."));
-    }
-  });
+    return new Promise((resolve, reject) => {
+        if (mockQualityComments[itemId]) {
+            mockQualityComments[itemId] = mockQualityComments[itemId].filter(c => c.id !== commentId);
+            setTimeout(() => resolve({ success: true }), 300);
+        } else {
+            reject(new Error("해당 항목을 찾지 못했습니다."));
+        }
+    });
 };
 

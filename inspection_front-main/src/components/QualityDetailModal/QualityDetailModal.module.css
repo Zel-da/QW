@@ -89,13 +89,26 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
 }
 
-.progressBar {
+/* 100% 길이를 보여줄 회색 배경 막대 (새로 추가) */
+.progressBarWrapper {
+    flex-grow: 1;
     height: 10px;
+    background-color: #e9ecef;
+    /* 회색 배경 */
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* 실제 진행률을 보여줄 녹색 막대 (수정) */
+.progressBar {
+    height: 100%;
+    /* 부모 높이를 꽉 채우도록 수정 */
     background-color: #a5d6a7;
     border-radius: 5px;
-
+    transition: width 0.3s ease-in-out;
 }
 
 .commentSection,
@@ -168,29 +181,31 @@
 }
 
 .comment {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
 }
 
 .comment p {
-  margin: 0;
+    margin: 0;
 }
 
 .deleteButton {
-  background: none;
-  border: none;
-  color: #e74c3c;
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 4px;
-  visibility: hidden; /* 평소에는 숨김 */
-  opacity: 0;
-  transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px;
+    visibility: hidden;
+    /* 평소에는 숨김 */
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 .comment:hover .deleteButton {
-  visibility: visible; /* 코멘트에 마우스를 올리면 보이게 */
-  opacity: 1;
+    visibility: visible;
+    /* 코멘트에 마우스를 올리면 보이게 */
+    opacity: 1;
 }

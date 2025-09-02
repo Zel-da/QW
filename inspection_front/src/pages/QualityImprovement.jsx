@@ -11,7 +11,7 @@ import { calculateStatus, statusMap } from '../utils';
 function QualityKpiSection({ items, onKpiClick }) {
     const kpiData = useMemo(() => {
         return items.reduce((acc, item) => {
-            const calculatedStatus = item.calculated_status; // Use calculated status from backend
+            const calculatedStatus = calculateStatus(item.progress, item.end_date); // Use calculated status
             if (calculatedStatus === 'completed') acc.completed += 1;
             else if (calculatedStatus === 'inProgress') acc.inProgress += 1;
             else if (calculatedStatus === 'delayed') acc.delayed += 1;
@@ -63,7 +63,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
         const usernames = [...new Set(items.map(item => item.username))];
         const company_names = [...new Set(items.map(item => item.company_name))];
         // Calculate statuses dynamically for filter options
-        const calculatedStatuses = [...new Set(items.map(item => item.calculated_status))];
+        const calculatedStatuses = [...new Set(items.map(item => calculateStatus(item.progress, item.end_date)))];
         setFilterOptions({ 
             usernames: ['all', ...usernames],
             company_names: ['all', ...company_names],
@@ -74,7 +74,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
     const filteredItems = useMemo(() => {
         return items.filter(item => {
             const { username, company_name, status } = filters;
-            const itemCalculatedStatus = item.calculated_status; // Calculate status for each item
+            const itemCalculatedStatus = calculateStatus(item.progress, item.end_date); // Calculate status for each item
             return (
                 (username === 'all' || item.username === username) &&
                 (company_name === 'all' || item.company_name === company_name) &&
@@ -189,7 +189,7 @@ function QualityImprovement({ user }) {
             return allItems;
         }
         // Calculate status for each item and filter based on that
-        return allItems.filter(item => item.calculated_status === statusFilter);
+        return allItems.filter(item => calculateStatus(item.progress, item.end_date) === statusFilter);
     }, [statusFilter, allItems]);
 
     if (isLoading) return <div>로딩 중...</div>;
@@ -212,4 +212,4 @@ function QualityImprovement({ user }) {
     );
 }
 
-export default QualityImprovement;
+export default QualityImprovement;yImprovement;

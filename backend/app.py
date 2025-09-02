@@ -357,22 +357,24 @@ def get_users(current_user):
 # == Quality Improvement Endpoints ==
 
 def calculate_status_py(progress, end_date):
-    if progress == 100:
+    if progress is not None and progress >= 100:
         return 'completed'
-    if end_date is None:
+    if not end_date:
         return 'inProgress'
     
     today = datetime.now().date()
     
-    # If end_date is a string, convert it to a date object
+    end_date_obj = end_date
     if isinstance(end_date, str):
         try:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-        except ValueError:
-            # Handle cases where the date format might be different or invalid
-            return 'inProgress' # Default to inProgress if date is malformed
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return 'inProgress'
 
-    if today > end_date:
+    if isinstance(end_date, datetime):
+        end_date_obj = end_date.date()
+
+    if today > end_date_obj:
         return 'delayed'
     else:
         return 'inProgress'
@@ -394,7 +396,7 @@ def get_quality_improvements(current_user):
             cursor.execute(query)
             items = cursor.fetchall()
             for item in items:
-                item['calculated_status'] = calculate_status_py(item['progress'], item['end_date'])
+                item['calculated_status'] = calculate_status_py(item.get('progress'), item.get('end_date'))
             return jsonify(items)
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500

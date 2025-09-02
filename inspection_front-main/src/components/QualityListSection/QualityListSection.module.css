@@ -10,26 +10,27 @@
 
 .sectionHeader {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
     margin-bottom: 24px;
-    gap: 16px;
+    /* gap: 16px; */
 }
 
 .sectionHeader h2 {
     margin: 0;
     font-size: 1.5rem;
     flex-shrink: 0;
+    margin-right: 24px;
 }
 
-.filters {
+.desktopFilters {
     display: flex;
     gap: 12px;
     flex-grow: 1;
     justify-content: flex-start;
 }
 
-.filters select {
+.desktopFilters select {
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -37,7 +38,7 @@
     font-size: 0.9rem;
 }
 
-.addButton {
+.desktopAddButton {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -51,6 +52,32 @@
     font-weight: 500;
     margin-left: auto;
     flex-shrink: 0;
+}
+
+.statusTag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    /* 폰트 크기 조정 */
+    color: #3d405b;
+    white-space: nowrap;
+    /* 태그 내용이 줄바꿈되지 않도록 */
+}
+
+.inProgress {
+    background-color: #ffe082;
+    /* 진행중 노란색 */
+}
+
+.completed {
+    background-color: #a5d6a7;
+    /* 완료 초록색 */
+}
+
+.delayed {
+    background-color: #ffab91;
+    /* 지연 주황색 */
 }
 
 .inspectionTable {
@@ -121,13 +148,28 @@
 .progressBarContainer {
     display: flex;
     align-items: center;
+    width: 100%;
     gap: 8px;
 }
 
-.progressBar {
+.progressBarWrapper {
+    flex-grow: 1;
+    /* 텍스트를 제외한 모든 남는 공간을 차지 */
     height: 10px;
-    background-color: #a5d6a7;
+    background-color: #e9ecef;
+    /* 막대그래프의 배경색 */
     border-radius: 5px;
+    overflow: hidden;
+    /* 자식 요소가 밖으로 나가지 않도록 */
+}
+
+.progressBar {
+    height: 100%;
+    /* 부모 높이(10px)를 꽉 채움 */
+    background-color: #a5d6a7;
+    /* 진행률 채우기 색상 */
+    border-radius: 5px;
+    /* width는 이제 JSX의 인라인 스타일로만 제어됩니다. */
 }
 
 .statusTag {
@@ -152,6 +194,126 @@
 }
 
 .clickableRow:hover {
-  background-color: #f8f9fa;
-  cursor: pointer;
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.desktopFilters {
+    display: flex;
+    gap: 12px;
+    flex-grow: 1; /* ▼▼▼ 수정 2: 남은 공간을 유연하게 차지하도록 flex-grow를 유지합니다. ▼▼▼ */
+    justify-content: flex-start; /* 필터는 왼쪽으로 정렬 */
+    /* min-width: 0; 추가: Flex 아이템이 내용물보다 작아질 수 있도록 허용 */
+    min-width: 0;
+}
+
+
+
+/* 기본(데스크탑) 상태: 모바일용 요소 숨기기 */
+.mobileActions,
+.cardList {
+    display: none;
+}
+
+
+/* ======================================== */
+/* 모바일 반응형 (768px 이하) */
+/* ======================================== */
+@media (max-width: 768px) {
+
+    /* 1. 데스크탑용 요소 숨기기 */
+    .desktopFilters,
+    .desktopAddButton,
+    .inspectionTable {
+        display: none;
+    }
+
+    /* 2. 모바일용 요소 보여주기 */
+    .mobileActions,
+    .cardList {
+        display: flex;
+    }
+
+    .cardList {
+        display: block;
+    }
+
+    .sectionHeader {
+        flex-wrap: wrap;
+    }
+
+    .sectionHeader h2 {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .mobileActions {
+        margin-left: auto;
+        gap: 8px;
+    }
+
+    .mobileButton {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    /* 3. 카드 디자인 */
+    .card {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+    }
+
+    .cardRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .fullWidthRow {
+        /* justify-content: flex-start; 를 아래와 같이 변경합니다. */
+        justify-content: space-between;
+        /* 양쪽 끝으로 요소를 분배 */
+        align-items: flex-start;
+        /* 아이템들을 위쪽으로 정렬 */
+    }
+
+    .cardRow:last-child {
+        margin-bottom: 0;
+    }
+
+    .cardItem {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .cardLabel {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .cardValue {
+        font-size: 1rem;
+        font-weight: 500;
+        /* 긴 텍스트가 잘 보이도록 설정 */
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .alignRight {
+        align-items: flex-end;
+    }
 }

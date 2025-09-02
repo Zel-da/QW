@@ -44,10 +44,11 @@
     min-width: 120px;
     padding: 16px;
     border-radius: 8px;
-    color: #fff;
+    /* color: #fff; */
     text-align: center;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 
 .kpiValue {
     font-size: 2.5rem;
@@ -61,19 +62,62 @@
     margin: 0;
 }
 
-/* 색상 정의 */
 .delayed {
     background-color: #ffab91;
+    /* 부드러운 코랄 레드 */
+    color: #5f2a1a;
+    /* 어두운 적갈색 텍스트 */
 }
 
 .inProgress {
     background-color: #ffe082;
+    /* 부드러운 앰버 옐로우 */
+    color: #6c5200;
+    /* 어두운 황갈색 텍스트 */
 }
 
 .completed {
     background-color: #a5d6a7;
+    /* 부드러운 민트 그린 */
+    color: #1e5520;
+    /* 어두운 녹색 텍스트 */
 }
 
 .total {
     background-color: #90caf9;
+    /* 부드러운 스카이 블루 */
+    color: #0d47a1;
+    /* 어두운 남색 텍스트 */
+}
+
+@media (max-width: 768px) {
+
+    /* 1. 차트와 카드 섹션을 세로로 쌓음 */
+    .kpiContentWrapper {
+        flex-direction: column;
+        align-items: stretch;
+        /* 아이템들이 컨테이너 너비를 꽉 채우도록 */
+    }
+
+    /* 2. 차트가 세로로 쌓일 때 너무 커지지 않도록 조정 */
+    .kpiChartContainer {
+        max-width: 280px;
+        /* 모바일에 맞는 최대 너비 설정 */
+        margin-bottom: 24px;
+        /* 카드와의 간격 */
+    }
+
+    /* 3. 카드 컨테이너를 2x2 그리드로 변경 */
+    .kpiCardsContainer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* 2개의 열을 동일한 너비로 만듦 */
+        gap: 16px;
+        /* 카드 사이의 간격 */
+    }
+
+    .kpiCard {
+        /* 개별 카드의 최소 너비 설정 (필요 시) */
+        min-width: 0;
+    }
 }

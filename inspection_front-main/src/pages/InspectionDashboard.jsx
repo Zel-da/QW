@@ -9,7 +9,7 @@ function InspectionDashboard({ user }) {
     return (
         <>
             <div className={styles.contentTitleArea}>
-                <h2 className={styles.contentMainTitle}>외주업체 출장검사 현황 대시보드</h2>
+                <h2 className={styles.contentMainTitle}>외주업체 출장검사 현황</h2>
                 <p className={styles.contentSubTitle}>실시간으로 업체별 현황을 확인하세요.</p>
             </div>
             <div className={styles.scrollableContent}>
