@@ -103,7 +103,7 @@ def get_inspections(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT i.id, u.username, c.company_name, p.product_name, p.product_code, i.received_date,
+                SELECT i.id, i.user_id, u.username, c.company_name, p.product_name, p.product_code, i.received_date,
                        i.inspected_quantity, i.defective_quantity, i.status,
                        i.defect_reason, i.solution, i.target_date, i.progress_percentage, i.created_at
                 FROM Inspections i
@@ -387,7 +387,7 @@ def get_quality_improvements(current_user):
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             query = """
-                SELECT q.id, u.username, c.company_name, q.item_description, q.status, q.start_date, q.end_date, q.progress
+                SELECT q.id, q.user_id, u.username, c.company_name, q.item_description, q.status, q.start_date, q.end_date, q.progress
                 FROM QualityImprovements q
                 JOIN Users u ON q.user_id = u.id
                 JOIN Companies c ON q.company_id = c.id
