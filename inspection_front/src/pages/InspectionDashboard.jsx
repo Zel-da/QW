@@ -4,6 +4,8 @@ import KpiSection from '../components/KpiSection/KpiSection.jsx';
 import ListSection from '../components/ListSection/ListSection.jsx';
 import styles from './InspectionDashboard.module.css';
 
+import { calculateStatus } from '../utils';
+
 function InspectionDashboard({ user }) {
     const [allInspections, setAllInspections] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ function InspectionDashboard({ user }) {
         if (statusFilter === 'all') {
             return allInspections;
         }
-        return allInspections.filter(item => item.status === statusFilter);
+        return allInspections.filter(item => calculateStatus(item) === statusFilter);
     }, [statusFilter, allInspections]);
 
     return (

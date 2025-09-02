@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react';
 import KpiPieChart from '../KpiPieChart.jsx';
 import styles from './KpiSection.module.css';
+import { calculateStatus } from '../../utils';
+
+import { calculateStatus } from '../../utils';
 
 function KpiSection({ inspections, onKpiClick }) {
     const kpiData = useMemo(() => {
         return inspections.reduce((acc, item) => {
-            const status = item.status || 'inProgress'; // Default status if undefined
+            const status = calculateStatus(item); // Use calculated status
             if (status === 'completed') {
                 acc.completed += 1;
             } else if (status === 'inProgress') {
