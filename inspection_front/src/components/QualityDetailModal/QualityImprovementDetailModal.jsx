@@ -102,7 +102,7 @@ const QualityImprovementDetailModal = ({ item, onClose, user, onUpdate }) => {
                 {/* 4열: 상태 */}
                 <div className={styles.detailFullWidth}>
                     <label>상태</label>
-                    <p>{statusMap[calculateStatus(item.progress, item.end_date)]?.text || item.status}</p>
+                    <p>{statusMap[calculateStatus(item)]?.text || item.status}</p>
                 </div>
                 {/* 5열: 진행률 */}
                 <div className={styles.detailFullWidth}>

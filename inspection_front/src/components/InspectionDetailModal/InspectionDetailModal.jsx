@@ -126,7 +126,7 @@ const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
                 {/* Calculated Status */}
                 <div className={styles.detailFullWidth}>
                     <label>상태</label>
-                    <p>{statusMap[calculateStatus(item.progress_percentage, item.target_date)]?.text || '-'}</p>
+                    <p>{statusMap[calculateStatus(item)]?.text || '-'}</p>
                 </div>
             </div>
 

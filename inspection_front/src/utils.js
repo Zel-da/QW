@@ -1,26 +1,21 @@
-export const calculateStatus = (progress, targetDateStr) => {
-    console.log(`calculateStatus received: progress=${progress}, targetDateStr=${targetDateStr}`);
+export const calculateStatus = (item) => {
+    const progress = item.progress !== undefined ? item.progress : item.progress_percentage;
+    const targetDateStr = item.end_date || item.target_date;
+
     if (progress === 100) {
         return 'completed';
     }
-
-    // If no target date is provided, it's always in progress (unless completed)
-    if (!targetDateStr) { // Handles null, undefined, empty string
+    if (!targetDateStr) {
         return 'inProgress';
     }
-
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today to start of day
-
+    today.setHours(0, 0, 0, 0);
     const targetDate = new Date(targetDateStr);
-    targetDate.setHours(0, 0, 0, 0); // Normalize targetDate to start of day
-
-    // Check for Invalid Date (e.g., if targetDateStr was malformed but not null/empty)
+    targetDate.setHours(0, 0, 0, 0);
     if (isNaN(targetDate.getTime())) {
-        return 'inProgress'; // Treat as in progress if date is invalid
+        return 'inProgress';
     }
-
-    if (today > targetDate) { // Today is strictly after target date
+    if (today > targetDate) {
         return 'delayed';
     } else {
         return 'inProgress';

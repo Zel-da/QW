@@ -93,7 +93,7 @@ function ListSection({ user, inspections, onSuccess }) { // inspectionsë¥¼ propì
                     </thead>
                     <tbody>
                         {filteredInspections.map((item) => {
-                            const calculatedStatusKey = calculateStatus(item.progress_percentage, item.target_date);
+                            const calculatedStatusKey = calculateStatus(item);
                             const statusInfo = statusMap[calculatedStatusKey] || {};
                             return (
                                 <tr key={item.id} onClick={() => handleRowClick(item.id)} className={styles.clickableRow}>
