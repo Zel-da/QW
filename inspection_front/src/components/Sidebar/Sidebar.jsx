@@ -11,7 +11,7 @@ function Sidebar({ user, onClose }) { // user prop을 받도록 수정
       <button className={styles.closeButton} onClick={onClose}>
         <FaTimes />
       </button>
-      <img src="../../assets/1.png" alt="외부업체 출장검사 대시보드" className={styles.sidebarLogo} />
+      
       <ul className={styles.navMenu}>
         <li className={`${styles.navItem} ${location.pathname === '/' ? styles.active : ''}`}>
           <Link to="/"><FaClipboardList /><span>출장검사 현황</span></Link>

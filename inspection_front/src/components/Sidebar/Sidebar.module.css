@@ -21,14 +21,6 @@
   /* 로고 글씨는 더 밝게 */
 }
 
-.sidebarLogo {
-  max-width: 100%; /* Ensure image fits within sidebar */
-  height: auto; /* Maintain aspect ratio */
-  display: block; /* Remove extra space below image */
-  margin: 0 auto 40px auto; /* Center image and add bottom margin */
-  padding: 0 10px; /* Add some padding to prevent image from touching edges */
-}
-
 .navMenu {
   list-style: none;
   padding: 0;
