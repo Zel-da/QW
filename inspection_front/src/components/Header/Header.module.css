@@ -1,14 +1,39 @@
-/* src/components/Header.module.css */
 .header {
     display: flex;
-    justify-content: flex-end;
     align-items: center;
-    padding: 16px 32px;
+    padding: 16px 24px;
+    /* 모바일 화면을 위해 좌우 패딩을 약간 줄입니다. */
     background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
 }
 
-/* 세련된 로그인 버튼 스타일 */
+.sidebarToggleButton {
+    display: none;
+    /* PC 화면에서는 숨김 */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+    margin-right: 16px;
+}
+
+/* ▼▼▼ 이 부분이 핵심적인 수정사항입니다. ▼▼▼ */
+.rightSection {
+    margin-left: auto;
+    /* 이 컨테이너를 오른쪽 끝으로 밀어냅니다. */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-weight: 500;
+}
+
 .loginButton {
     background-color: #fff;
     color: #007bff;
@@ -19,6 +44,8 @@
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    /* 글자가 줄바꿈되지 않도록 */
 }
 
 .loginButton:hover {
@@ -26,13 +53,8 @@
     color: #fff;
 }
 
-/* 로그인 후 표시될 UI 스타일 */
-.userInfo {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-weight: 500;
-}
+/* ▲▲▲ 여기까지 수정 ▲▲▲ */
+
 
 .logoutButton {
     background: none;
@@ -41,4 +63,27 @@
     cursor: pointer;
     text-decoration: underline;
     font-size: 0.9rem;
+}
+
+
+/* 화면 너비가 768px 이하일 때 (모바일) */
+@media (max-width: 768px) {
+    .sidebarToggleButton {
+        display: block;
+        /* 메뉴 버튼을 보여줌 */
+    }
+
+    .header {
+        padding: 16px;
+        /* 모바일에서 좌우 패딩을 더 줄임 */
+    }
+
+    /* 모바일에서는 사용자 이름 숨기기 (선택사항) */
+    .userInfo span {
+        /* display: none; */
+    }
+}
+
+@media (max-width: 480px) {
+  .header { padding-inline: 12px; }
 }

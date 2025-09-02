@@ -16,6 +16,33 @@ const AppContent = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
   const [globalLoadingState, setGlobalLoadingState] = useState({ isLoading: false, isColdStarting: false, loadingMessage: '' });
+  const [isSidebarVisible, setIsSidebarVisible] = useState(window.innerWidth > 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsSidebarVisible(true);
+      } else {
+        setIsSidebarVisible(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const closeSidebar = () => {
+    setIsSidebarVisible(false);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
+  const isMobile = () => window.innerWidth <= 768;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -80,12 +107,18 @@ const AppContent = () => {
         />
       )}
       <div className={styles.appContainer} style={{ filter: (isLoginModalOpen || globalLoadingState.isLoading) ? 'blur(4px)' : 'none', pointerEvents: (isLoginModalOpen || globalLoadingState.isLoading) ? 'none' : 'auto' }}>
-        <Sidebar user={currentUser} />
+        {isSidebarVisible && <Sidebar user={currentUser} onClose={closeSidebar} />}
+
+        {isMobile() && isSidebarVisible && (
+          <div className={styles.sidebarBackdrop} onClick={closeSidebar}></div>
+        )}
+
         <main className={styles.mainContentContainer}>
           <Header
             user={currentUser}
             onLoginClick={() => setIsLoginModalOpen(true)} // Pass handler to open modal
             onLogout={handleLogout}
+            onToggleSidebar={toggleSidebar}
           />
           <div className={styles.mainContent}>
             <Routes>

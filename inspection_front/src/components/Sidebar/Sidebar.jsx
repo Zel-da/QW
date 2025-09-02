@@ -1,15 +1,16 @@
-// src/components/Sidebar/index.jsx 또는 Sidebar.jsx
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaClipboardList, FaChartLine, FaUserEdit, FaUsersCog } from 'react-icons/fa'; // FaUsersCog 아이콘 추가
+import { FaClipboardList, FaChartLine, FaUserEdit, FaUsersCog, FaTimes } from 'react-icons/fa'; // FaUsersCog 아이콘 추가
 import styles from './Sidebar.module.css';
 
-function Sidebar({ user }) { // user prop을 받도록 수정
+function Sidebar({ user, onClose }) { // user prop을 받도록 수정
   const location = useLocation();
 
   return (
     <nav className={styles.sidebar}>
+      <button className={styles.closeButton} onClick={onClose}>
+        <FaTimes />
+      </button>
       <h1 className={styles.logo}>외부업체 출장검사 대시보드</h1>
       <ul className={styles.navMenu}>
         <li className={`${styles.navItem} ${location.pathname === '/' ? styles.active : ''}`}>
