@@ -1,4 +1,4 @@
-/* src/components/ListSection.module.css */
+/* src/components/QualityListSection/QualityListSection.module.css */
 
 .listSection {
     background-color: #fff;
@@ -19,6 +19,59 @@
     margin: 0;
     font-size: 1.5rem;
     flex-shrink: 0;
+    margin-right: 24px;
+}
+
+.desktopFilters {
+    display: flex;
+    gap: 12px;
+    flex-grow: 1;
+    justify-content: flex-start;
+}
+
+.desktopFilters select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.9rem;
+}
+
+.desktopAddButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.statusTag {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #3d405b;
+    white-space: nowrap;
+}
+
+.inProgress {
+    background-color: #ffe082;
+}
+
+.completed {
+    background-color: #a5d6a7;
+}
+
+.delayed {
+    background-color: #ffab91;
 }
 
 .inspectionTable {
@@ -40,15 +93,20 @@
 
 .inspectionTable th {
     font-weight: bold;
-    background-color: #f8f9fa;
+    background-color: #f8f8fa;
     color: #333;
+}
+
+.improvementItem {
+    white-space: normal;
+    word-break: break-word;
 }
 
 .progressBarContainer {
     display: flex;
     align-items: center;
-    gap: 8px;
     width: 100%;
+    gap: 8px;
 }
 
 .progressBarWrapper {
@@ -65,84 +123,17 @@
     border-radius: 5px;
 }
 
-.statusTag {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 0.8rem;
-    color: #3d405b;
-}
-
-.inProgress {
-    background-color: #ffe082;
-}
-
-.completed {
-    background-color: #a5d6a7;
-}
-
-.delayed {
-    background-color: #ffab91;
-}
-
-.desktopAddButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-left: auto;
-    flex-shrink: 0;
-}
-
-.desktopAddButton:hover {
-    background-color: #0056b3;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-}
-
-.desktopFilters {
-    display: flex;
-    gap: 12px;
-    flex-grow: 1;
-    justify-content: flex-start;
-}
-
-.desktopFilters select {
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    font-size: 0.9rem;
-}
-
-
 .clickableRow:hover {
     background-color: #f8f9fa;
     cursor: pointer;
 }
 
-
-/* 기본(데스크탑) 상태: 모바일용 요소 숨기기 */
 .mobileActions,
 .cardList {
     display: none;
 }
 
-
-/* ======================================== */
-/* 모바일 반응형 (768px 이하) */
-/* ======================================== */
 @media (max-width: 768px) {
-
     .desktopFilters,
     .desktopAddButton,
     .inspectionTable {
@@ -192,7 +183,6 @@
         margin-bottom: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         cursor: pointer;
-        transition: box-shadow 0.2s;
     }
 
     .card:hover {
@@ -224,6 +214,8 @@
     .cardValue {
         font-size: 1rem;
         font-weight: 500;
+        white-space: normal;
+        word-break: break-word;
     }
 
     .alignRight {

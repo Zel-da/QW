@@ -248,3 +248,18 @@
 .clickableRow:hover {
     background-color: #f0f8ff; /* Light AliceBlue for hover */
 }
+
+@media (max-width: 768px) {
+    .kpiContentWrapper {
+        flex-direction: column;
+    }
+
+    .kpiCardsContainer {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .kpiCard {
+        flex-basis: calc(50% - 8px);
+    }
+}

@@ -8,7 +8,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 이 클래스는 ListSection과 중복되지만, 각 컴포넌트가 독립적으로 작동하도록 포함합니다. */
 .sectionHeader {
     display: flex;
     justify-content: space-between;
@@ -62,7 +61,6 @@
     margin: 0;
 }
 
-/* KPI 카드 파스텔 톤 색상 */
 .delayed {
     background-color: #ffab91;
 }
@@ -77,4 +75,19 @@
 
 .total {
     background-color: #90caf9;
+}
+
+@media (max-width: 768px) {
+    .kpiContentWrapper {
+        flex-direction: column;
+    }
+
+    .kpiCardsContainer {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .kpiCard {
+        flex-basis: calc(50% - 8px);
+    }
 }

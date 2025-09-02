@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import styles from './ListSection.module.css';
+import styles from './QualityListSection.module.css';
 import { FaPlus, FaFilter } from 'react-icons/fa';
-import AddInspectionModal from '../AddInspectionModal/AddInspectionModal.jsx';
-import InspectionDetailModal from '../InspectionDetailModal/InspectionDetailModal.jsx';
+import AddQualityItemModal from '../AddQualityItemModal/AddQualityItemModal.jsx';
+import QualityDetailModal from '../QualityDetailModal/QualityDetailModal.jsx';
 import FilterModal from '../FilterModal/FilterModal.jsx';
 import { calculateStatus, statusMap } from '../../utils';
 
-function ListSection({ user, inspections, onSuccess }) {
-    const [filteredInspections, setFilteredInspections] = useState([]);
+function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
+    const [filteredItems, setFilteredItems] = useState([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [filters, setFilters] = useState({ username: 'all', company_name: 'all', product_name: 'all', status: 'all' });
-    const [filterOptions, setFilterOptions] = useState({ usernames: [], company_names: [], product_names: [], statuses: ['all', 'delayed', 'inProgress', 'completed'] });
+    const [filters, setFilters] = useState({ username: 'all', company_name: 'all', status: 'all' });
+    const [filterOptions, setFilterOptions] = useState({ usernames: [], company_names: [], statuses: ['all', 'delayed', 'inProgress', 'completed'] });
 
     useEffect(() => {
-        const processedData = inspections.map(item => ({
+        const processedData = items.map(item => ({
             ...item,
             status: calculateStatus(item)
         }));
@@ -24,64 +24,47 @@ function ListSection({ user, inspections, onSuccess }) {
         let result = processedData;
         if (filters.username !== 'all') result = result.filter(item => item.username === filters.username);
         if (filters.company_name !== 'all') result = result.filter(item => item.company_name === filters.company_name);
-        if (filters.product_name !== 'all') result = result.filter(item => item.product_name === filters.product_name);
         if (filters.status !== 'all') result = result.filter(item => item.status === filters.status);
-        setFilteredInspections(result);
+        setFilteredItems(result);
 
-        if (inspections.length > 0) {
-            const usernames = [...new Set(inspections.map(item => item.username))];
-            const company_names = [...new Set(inspections.map(item => item.company_name))];
-            const product_names = [...new Set(inspections.map(item => item.product_name))];
-            setFilterOptions(prev => ({ ...prev, usernames: ['all', ...usernames], company_names: ['all', ...company_names], product_names: ['all', ...product_names] }));
+        if (items.length > 0) {
+            const usernames = [...new Set(items.map(item => item.username))];
+            const company_names = [...new Set(items.map(item => item.company_name))];
+            setFilterOptions(prev => ({ ...prev, usernames: ['all', ...usernames], company_names: ['all', ...company_names] }));
         }
-    }, [filters, inspections]);
+    }, [filters, items]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleOpenAddModal = () => {
-        if (!user) { alert('로그인이 필요합니다.'); return; }
-        setIsAddModalOpen(true);
-    };
+    const handleOpenAddModal = () => { if (!user) { alert('로그인이 필요합니다.'); return; } setIsAddModalOpen(true); };
+    const handleRowClick = (item) => { setSelectedItem(item); setIsDetailModalOpen(true); };
 
-    const handleRowClick = (item) => {
-        setSelectedItem(item);
-        setIsDetailModalOpen(true);
-    };
-
-    const applyFiltersFromModal = (newFilters) => {
-        setFilters(newFilters);
-    };
+    const applyFiltersFromModal = (newFilters) => { setFilters(newFilters); };
 
     return (
         <>
             <section className={styles.listSection}>
                 <div className={styles.sectionHeader}>
                     <h2>상세 목록</h2>
-
                     <div className={styles.desktopFilters}>
                         <select name="username" value={filters.username} onChange={handleFilterChange}>
-                            {filterOptions.usernames.map(option => (<option key={option} value={option}>{option === 'all' ? '담당자 전체' : option}</option>))}
+                            {filterOptions.usernames.map(opt => <option key={opt} value={opt}>{opt === 'all' ? '담당자 전체' : opt}</option>)}
                         </select>
                         <select name="company_name" value={filters.company_name} onChange={handleFilterChange}>
-                            {filterOptions.company_names.map(option => (<option key={option} value={option}>{option === 'all' ? '업체 전체' : option}</option>))}
-                        </select>
-                        <select name="product_name" value={filters.product_name} onChange={handleFilterChange}>
-                            {filterOptions.product_names.map(option => (<option key={option} value={option}>{option === 'all' ? '부품 전체' : option}</option>))}
+                            {filterOptions.company_names.map(opt => <option key={opt} value={opt}>{opt === 'all' ? '업체 전체' : opt}</option>)}
                         </select>
                         <select name="status" value={filters.status} onChange={handleFilterChange}>
-                            {filterOptions.statuses.map(option => (<option key={option} value={option}>{option === 'all' && '상태 전체'}{option === 'delayed' && '지연'}{option === 'inProgress' && '진행중'}{option === 'completed' && '완료'}</option>))}
+                            {filterOptions.statuses.map(opt => (<option key={opt} value={opt}>{opt === 'all' && '상태 전체'}{opt === 'delayed' && '지연'}{opt === 'inProgress' && '진행중'}{opt === 'completed' && '완료'}</option>))}
                         </select>
                     </div>
-
                     {user && (
                         <button onClick={handleOpenAddModal} className={styles.desktopAddButton}>
                             <FaPlus size={12} /><span>추가</span>
                         </button>
                     )}
-
                     <div className={styles.mobileActions}>
                         <button className={styles.mobileButton} onClick={() => setIsFilterModalOpen(true)}><FaFilter size={12} /><span>필터</span></button>
                         {user && (
@@ -91,33 +74,28 @@ function ListSection({ user, inspections, onSuccess }) {
                         )}
                     </div>
                 </div>
-
                 <table className={styles.inspectionTable}>
                     <thead>
                         <tr>
-                            <th>담당자</th><th>업체명</th><th>제품명</th><th>검사/불량 수량</th><th>불량사유</th><th>대처방안</th><th>접수일</th><th>마감일</th><th>진행률</th><th>상태</th>
+                            <th>담당자</th><th>업체명</th><th>개선항목</th><th>시작일</th><th>목표일</th><th>진행률</th><th>상태</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredInspections.map((item) => (
+                        {filteredItems.map((item) => (
                             <tr key={item.id} onClick={() => handleRowClick(item)} className={styles.clickableRow}>
                                 <td>{item.username}</td>
                                 <td>{item.company_name}</td>
-                                <td>{item.product_name}</td>
-                                <td>{`${item.inspected_quantity} / ${item.defective_quantity}`}</td>
-                                <td className={styles.truncate}>{item.defect_reason}</td>
-                                <td className={styles.truncate}>{item.solution}</td>
-                                <td>{item.received_date ? new Date(item.received_date).toLocaleDateString() : '-'}</td>
-                                <td>{item.target_date ? new Date(item.target_date).toLocaleDateString() : '-'}</td>
-                                <td><div className={styles.progressBarContainer}><div className={styles.progressBarWrapper}><div className={styles.progressBar} style={{ width: `${item.progress_percentage}%` }}></div></div><span>{item.progress_percentage}%</span></div></td>
+                                <td className={styles.improvementItem}>{item.item_description}</td>
+                                <td>{new Date(item.start_date).toLocaleDateString()}</td>
+                                <td>{item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}</td>
+                                <td><div className={styles.progressBarContainer}><div className={styles.progressBarWrapper}><div className={styles.progressBar} style={{ width: `${item.progress}%` }}></div></div><span>{item.progress}%</span></div></td>
                                 <td><span className={`${styles.statusTag} ${styles[item.status]}`}>{statusMap[item.status]?.text}</span></td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-
                 <div className={styles.cardList}>
-                    {filteredInspections.map(item => (
+                    {filteredItems.map(item => (
                         <div key={item.id} className={styles.card} onClick={() => handleRowClick(item)}>
                             <div className={styles.cardRow}>
                                 <div className={styles.cardItem}>
@@ -134,18 +112,18 @@ function ListSection({ user, inspections, onSuccess }) {
                                     <span className={styles.cardValue}>{item.company_name}</span>
                                 </div>
                                 <div className={`${styles.cardItem} ${styles.alignRight}`}>
-                                    <span className={styles.cardLabel}>제품명</span>
-                                    <span className={styles.cardValue}>{item.product_name}</span>
+                                    <span className={styles.cardLabel}>개선항목</span>
+                                    <span className={styles.cardValue}>{item.item_description}</span>
                                 </div>
                             </div>
                             <div className={styles.cardRow}>
                                 <div className={styles.cardItem}>
-                                    <span className={styles.cardLabel}>목표기간</span>
-                                    <span className={styles.cardValue}>{item.target_date ? new Date(item.target_date).toLocaleDateString() : '-'}</span>
+                                    <span className={styles.cardLabel}>목표일</span>
+                                    <span className={styles.cardValue}>{item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}</span>
                                 </div>
                                 <div className={`${styles.cardItem} ${styles.alignRight}`}>
                                     <span className={styles.cardLabel}>진행률</span>
-                                    <span className={styles.cardValue}>{item.progress_percentage}%</span>
+                                    <span className={styles.cardValue}>{item.progress}%</span>
                                 </div>
                             </div>
                         </div>
@@ -153,19 +131,19 @@ function ListSection({ user, inspections, onSuccess }) {
                 </div>
             </section>
 
-            {isDetailModalOpen && (<InspectionDetailModal user={user} item={selectedItem} onClose={() => setIsDetailModalOpen(false)} onUpdate={onSuccess} />)}
-            {isAddModalOpen && user && (<AddInspectionModal user={user} onClose={() => setIsAddModalOpen(false)} onSuccess={onSuccess} />)}
+            {isAddModalOpen && user && (<AddQualityItemModal user={user} onClose={() => setIsAddModalOpen(false)} onSuccess={onAddSuccess} />)}
+            {isDetailModalOpen && (<QualityDetailModal item={selectedItem} user={user} onClose={() => setIsDetailModalOpen(false)} onUpdate={onAddSuccess} />)}
             {isFilterModalOpen && (
                 <FilterModal
                     onClose={() => setIsFilterModalOpen(false)}
                     onApplyFilters={applyFiltersFromModal}
                     initialFilters={filters}
                     filterOptions={filterOptions}
-                    type="inspection"
+                    type="quality"
                 />
             )}
         </>
     );
 }
 
-export default ListSection;
+export default QualityListSection;

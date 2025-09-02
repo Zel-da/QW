@@ -2,9 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styles from './QualityImprovement.module.css';
 import qualityApi from '../api/qualityApi.js';
 import KpiPieChart from '../components/KpiPieChart.jsx';
-import AddQualityItemModal from '../components/AddQualityItemModal/AddQualityItemModal.jsx';
-import QualityDetailModal from '../components/QualityDetailModal/QualityImprovementDetailModal.jsx';
-import { FaPlus } from 'react-icons/fa';
+import QualityListSection from '../components/QualityListSection/QualityListSection.jsx';
 import { calculateStatus, statusMap } from '../utils';
 
 // --- KPI Section --- //
@@ -51,102 +49,11 @@ function QualityKpiSection({ items, onKpiClick }) {
     );
 }
 
-// --- List Section --- //
-function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [filters, setFilters] = useState({ username: 'all', company_name: 'all', status: 'all' });
-    const [filterOptions, setFilterOptions] = useState({ usernames: [], company_names: [], statuses: [] });
-
-    
-
-    useEffect(() => {
-        const usernames = [...new Set(items.map(item => item.username))];
-        const company_names = [...new Set(items.map(item => item.company_name))];
-        // Calculate statuses dynamically for filter options
-        const calculatedStatuses = [...new Set(items.map(item => calculateStatus(item)))];
-        setFilterOptions({ 
-            usernames: ['all', ...usernames],
-            company_names: ['all', ...company_names],
-            statuses: ['all', ...calculatedStatuses] // Use calculated statuses
-        });
-    }, [items]);
-
-    const filteredItems = useMemo(() => {
-        return items.filter(item => {
-            const { username, company_name, status } = filters;
-            const itemCalculatedStatus = calculateStatus(item); // Calculate status for each item
-            return (
-                (username === 'all' || item.username === username) &&
-                (company_name === 'all' || item.company_name === company_name) &&
-                (status === 'all' || itemCalculatedStatus === status) // Use calculated status for filtering
-            );
-        });
-    }, [items, filters]);
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleOpenModal = () => { 
-        if (!user) { alert('로그인이 필요합니다.'); return; } 
-        setIsModalOpen(true); 
-    };
-
-    return (
-        <>
-            <section className={styles.listSection}>
-                <div className={styles.sectionHeader}>
-                    <h2>상세 목록</h2>
-                    <div className={styles.filters}>
-                        <select name="username" value={filters.username} onChange={handleFilterChange}>{filterOptions.usernames.map(o => (<option key={o} value={o}>{o === 'all' ? '담당자 전체' : o}</option>))}</select>
-                        <select name="company_name" value={filters.company_name} onChange={handleFilterChange}>{filterOptions.company_names.map(o => (<option key={o} value={o}>{o === 'all' ? '업체 전체' : o}</option>))}</select>
-                        <select name="status" value={filters.status} onChange={handleFilterChange}>{filterOptions.statuses.map(o => (<option key={o} value={o}>{o === 'all' ? '상태 전체' : (statusMap[o]?.text || o)}</option>))}</select>
-                    </div>
-                    <button onClick={handleOpenModal} className={styles.addButton}><FaPlus size={12} /><span>등록</span></button>
-                </div>
-                <table className={styles.inspectionTable}>
-                    <thead>
-                        <tr>
-                            <th>담당자</th><th>업체명</th><th>개선항목</th><th>시작일</th><th>마감일</th><th>진행률</th><th>상태</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredItems.map((item) => {
-                            const calculatedStatusKey = item.calculated_status;
-                            const statusInfo = statusMap[calculatedStatusKey] || {};
-                            return (
-                                <tr key={item.id} onClick={() => onRowClick(item.id)} className={styles.clickableRow}>
-                                    <td>{item.username}</td>
-                                    <td>{item.company_name}</td>
-                                    <td className={styles.improvementItem}>{item.item_description}</td>
-                                    <td>{new Date(item.start_date).toLocaleDateString()}</td>
-                                    <td>{item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}</td>
-                                    <td>
-                                        <div className={styles.progressBarContainer}>
-                                            <div className={styles.progressBar} style={{ width: `${item.progress}%` }}></div>
-                                            <span>{item.progress}%</span>
-                                        </div>
-                                    </td>
-                                    <td><span className={`${styles.statusTag} ${statusInfo.className}`}>{statusInfo.text}</span></td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </section>
-            {isModalOpen && user && <AddQualityItemModal user={user} onClose={() => setIsModalOpen(false)} onSuccess={onAddSuccess} />}
-        </>
-    );
-}
-
 // --- Main Page Component --- //
 function QualityImprovement({ user }) {
     const [allItems, setAllItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all');
 
     const fetchData = async () => {
@@ -164,9 +71,6 @@ function QualityImprovement({ user }) {
     useEffect(() => {
         if (user) {
             fetchData();
-        } else {
-            setIsLoading(false);
-            setAllItems([]);
         }
     }, [user]);
 
@@ -174,21 +78,10 @@ function QualityImprovement({ user }) {
         setStatusFilter(status);
     };
 
-    const handleRowClick = async (id) => {
-        try {
-            const data = await qualityApi.getQualityImprovementById(id);
-            setSelectedItem(data);
-            setIsDetailModalOpen(true);
-        } catch (err) {
-            alert(`상세 정보 조회 실패: ${err.message}`);
-        }
-    };
-
     const filteredByKpi = useMemo(() => {
         if (statusFilter === 'all') {
             return allItems;
         }
-        // Calculate status for each item and filter based on that
         return allItems.filter(item => calculateStatus(item) === statusFilter);
     }, [statusFilter, allItems]);
 
@@ -203,11 +96,8 @@ function QualityImprovement({ user }) {
             </div>
             <div className={styles.scrollableContent}>
                 <QualityKpiSection items={allItems} onKpiClick={handleKpiClick} />
-                <QualityListSection user={user} items={filteredByKpi} onRowClick={handleRowClick} onAddSuccess={fetchData} />
+                <QualityListSection user={user} items={filteredByKpi} onAddSuccess={fetchData} />
             </div>
-            {isDetailModalOpen && (
-                <QualityDetailModal user={user} item={selectedItem} onClose={() => setIsDetailModalOpen(false)} />
-            )}
         </>
     );
 }
