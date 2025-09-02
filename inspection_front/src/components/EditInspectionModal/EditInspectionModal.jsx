@@ -127,5 +127,6 @@ function EditInspectionModal({ item, onClose, onSuccess }) {
             </div>
         </div>
     );
+}
 
 export default EditInspectionModal;
