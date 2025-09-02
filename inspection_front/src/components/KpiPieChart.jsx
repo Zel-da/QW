@@ -54,7 +54,11 @@ function KpiPieChart({ kpiData }) {
             datalabels: { // Datalabels plugin configuration
                 color: '#000000', // Black color for the percentage text
                 formatter: (value, context) => {
-                    const total = context.chart.getDatasetMeta(0).total;
+                    const meta = context.chart.getDatasetMeta(0);
+                    if (!meta || !meta.total) { // Add null/undefined check
+                        return '0%'; // Or handle as appropriate for no data
+                    }
+                    const total = meta.total;
                     const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
                     return percentage + '%';
                 },
