@@ -1,9 +1,10 @@
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import the plugin
 
 // Chart.js에 필요한 요소들을 등록합니다. (필수 과정)
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels); // Register the plugin
 
 function KpiPieChart({ kpiData }) {
     // 차트에 표시할 데이터 설정
@@ -50,7 +51,21 @@ function KpiPieChart({ kpiData }) {
                     }
                 }
             },
-            
+            datalabels: { // Datalabels plugin configuration
+                color: '#000000', // Black color for the percentage text
+                formatter: (value, context) => {
+                    const meta = context.chart.getDatasetMeta(0);
+                    if (!meta || !meta.total) { // Add null/undefined check
+                        return '0%'; // Or handle as appropriate for no data
+                    }
+                    const total = meta.total;
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
+                    return percentage + '%';
+                },
+                font: {
+                    weight: 'bold' // Make the percentage text bold
+                }
+            }
         },
     };
 
