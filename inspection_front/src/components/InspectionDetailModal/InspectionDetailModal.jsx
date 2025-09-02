@@ -67,26 +67,61 @@ const InspectionDetailModal = ({ item, onClose, user, onUpdate }) => {
             <button className={styles.closeButton} onClick={onClose}>&times;</button>
           </div>
           <div className={styles.content}>
-            {/* Basic Info Grid */}
-            <div className={styles.grid}>
-              <div className={styles.gridItem}><strong>작성자:</strong> {item.username}</div>
-              <div className={styles.gridItem}><strong>업체명:</strong> {item.company_name}</div>
-              <div className={styles.gridItem}><strong>품명:</strong> {item.product_name}</div>
-              <div className={styles.gridItem}><strong>품번:</strong> {item.product_code}</div>
-              <div className={styles.gridItem}><strong>총 검사 수량:</strong> {item.inspected_quantity?.toLocaleString()}</div>
-              <div className={styles.gridItem}><strong>불량 수량:</strong> {item.defective_quantity?.toLocaleString()}</div>
-              <div className={styles.gridItem}><strong>접수일:</strong> {formatDate(item.start_date)}</div>
-              <div className={styles.gridItem}><strong>마감일:</strong> {formatDate(item.target_date)}</div>
-            </div>
-
-            {/* Defect Reason and Solution */}
-            <div className={styles.fullWidthItem}>
-              <strong>불량 사유:</strong>
-              <p>{item.defect_reason || '-'}</p>
-            </div>
-            <div className={styles.fullWidthItem}>
-              <strong>조치 방법:</strong>
-              <p>{item.solution || '-'}</p>
+            {/* Basic Info Layout */}
+            <div className={styles.detailLayout}>
+                {/* 1줄: 담당자명 */}
+                <div className={styles.detailFullWidth}>
+                    <label>담당자명</label>
+                    <p>{item.username}</p>
+                </div>
+                {/* 2줄: 업체명 */}
+                <div className={styles.detailFullWidth}>
+                    <label>업체명</label>
+                    <p>{item.company_name}</p>
+                </div>
+                {/* 3줄: 부품명 / 부품코드 */}
+                <div className={styles.detailRow}>
+                    <div>
+                        <label>부품명</label>
+                        <p>{item.product_name}</p>
+                    </div>
+                    <div>
+                        <label>부품코드</label>
+                        <p>{item.product_code}</p>
+                    </div>
+                </div>
+                {/* 4줄: 총 검사 수량 / 불량 수량 */}
+                <div className={styles.detailRow}>
+                    <div>
+                        <label>총 검사 수량</label>
+                        <p>{item.inspected_quantity?.toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <label>불량 수량</label>
+                        <p>{item.defective_quantity?.toLocaleString()}</p>
+                    </div>
+                </div>
+                {/* 5줄: 불량 사유 */}
+                <div className={styles.detailFullWidth}>
+                    <label>불량 사유</label>
+                    <p>{item.defect_reason || '-'}</p>
+                </div>
+                {/* 6줄: 조치 방법 */}
+                <div className={styles.detailFullWidth}>
+                    <label>조치 방법</label>
+                    <p>{item.solution || '-'}</p>
+                </div>
+                {/* 7줄: 접수일 / 마감일 */}
+                <div className={styles.detailRow}>
+                    <div>
+                        <label>접수일</label>
+                        <p>{formatDate(item.start_date)}</p>
+                    </div>
+                    <div>
+                        <label>마감일</label>
+                        <p>{formatDate(item.target_date)}</p>
+                    </div>
+                </div>
             </div>
 
             {/* 8. Progress Bar */}

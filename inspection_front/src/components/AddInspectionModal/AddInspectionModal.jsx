@@ -27,9 +27,7 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Ensure progress_percentage is sent as 0 for new items
-            const dataToSend = { ...formData, progress_percentage: 0 };
-            await addInspection(dataToSend);
+            await addInspection(formData);
             onSuccess();
             onClose();
         } catch (error) {
@@ -99,10 +97,8 @@ function AddInspectionModal({ user, onClose, onSuccess }) {
                     </div>
                     {/* 8줄: 진행률 */}
                     <div className={styles.fullWidth}>
-                        <label>진행률 (0%)</label>
-                        <div className={styles.progressBarContainer}>
-                            <div className={styles.progressBar} style={{ width: '0%' }}></div>
-                        </div>
+                        <label>진행률: {formData.progress_percentage}%</label>
+                        <input type="range" name="progress_percentage" value={formData.progress_percentage} onChange={handleChange} min="0" max="100" step="5" className={styles.slider} style={{ '--progress-percent': `${formData.progress_percentage}%` }} />
                     </div>
                     
                     <input type="hidden" name="status" value={formData.status} />
