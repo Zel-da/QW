@@ -4,6 +4,19 @@
 /* ==      전역 스타일 및 기본값 초기화      == */
 /* =============================================== */
 
+:root {
+  --color-background-light: #ffffff; /* White for modal background */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-primary: #007bff;
+  --color-primary-dark: #0056b3;
+  --color-primary-rgb: 0, 123, 255; /* RGB for rgba() usage */
+  --color-border: #e0e0e0;
+  --color-input-background: #f8f8f8;
+  --color-danger: #dc3545;
+  --color-success: #28a745;
+}
+
 html,
 body,
 #root {
