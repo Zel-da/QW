@@ -240,3 +240,11 @@
 .total {
     background-color: #90caf9;
 }
+
+.clickableRow {
+    cursor: pointer;
+}
+
+.clickableRow:hover {
+    background-color: #f0f8ff; /* Light AliceBlue for hover */
+}
