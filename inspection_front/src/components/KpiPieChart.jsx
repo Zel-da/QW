@@ -1,71 +1,82 @@
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import the plugin
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-// Chart.js에 필요한 요소들을 등록합니다. (필수 과정)
-ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels); // Register the plugin
+// Chart.js에 필요한 요소들을 등록합니다.
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 function KpiPieChart({ kpiData }) {
-    // 차트에 표시할 데이터 설정
+    // kpiData가 없을 경우, 차트를 렌더링하지 않거나 로딩 상태를 표시합니다.
+    // 이렇게 하면 kpiData.delayed와 같은 속성 접근 시 발생하는 오류를 방지할 수 있습니다.
+    if (!kpiData) {
+        return <div>Loading chart...</div>;
+    }
+
+    const chartValues = [
+        kpiData.delayed || 0,
+        kpiData.inProgress || 0,
+        kpiData.completed || 0,
+    ];
+
     const data = {
         labels: ['지연', '진행 중', '완료'],
         datasets: [
             {
                 label: '항목 수',
-                // kpiData prop으로 받은 데이터를 사용합니다.
-                data: [kpiData.delayed, kpiData.inProgress, kpiData.completed],
-                // 요청하신 색상으로 설정합니다. (빨강, 노랑, 초록)
+                data: chartValues,
                 backgroundColor: [
-                    '#ffab91', // 지연 (부드러운 코랄 레드)
-                    '#ffe082', // 진행 중 (부드러운 앰버 옐로우)
-                    '#a5d6a7', // 완료 (부드러운 민트 그린)
+                    '#ffab91', // 지연
+                    '#ffe082', // 진행 중
+                    '#a5d6a7', // 완료
                 ],
                 borderWidth: 2,
             },
         ],
     };
 
-    // 차트 옵션 설정 (예: 제목)
     const options = {
-        responsive: true, // 반응형으로 크기 조절
+        responsive: true,
         plugins: {
             legend: {
-                position: 'top', // 범례 위치
+                position: 'top',
             },
             title: {
                 display: true,
-                text: '항목별 진행 현황', // 차트 제목
+                text: '항목별 진행 현황',
                 font: {
-                    size: 16
-                }
+                    size: 16,
+                },
             },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
+                    label: function (context) {
                         const label = context.label || '';
                         const value = context.raw || 0;
                         const total = context.chart.getDatasetMeta(0).total;
                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
                         return `${label}: ${value} (${percentage})`;
-                    }
-                }
-            },
-            datalabels: { // Datalabels plugin configuration
-                color: '#000000', // Black color for the percentage text
-                formatter: (value, context) => {
-                    const meta = context.chart.getDatasetMeta(0);
-                    if (!meta || !meta.total) { // Add null/undefined check
-                        return '0%'; // Or handle as appropriate for no data
-                    }
-                    const total = meta.total;
-                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-                    return percentage + '%';
+                    },
                 },
+            },
+            datalabels: {
+                color: '#000000', // 글자색: 검정
                 font: {
-                    weight: 'bold' // Make the percentage text bold
-                }
-            }
+                    weight: 'bold', // 글자 두께: 굵게
+                },
+                // 포매터 함수는 각 데이터 항목에 대한 레이블을 생성합니다.
+                formatter: (value, context) => {
+                    // 전체 합계를 계산합니다.
+                    const total = context.chart.data.datasets[0].data.reduce((acc, cur) => acc + cur, 0);
+                    // 0으로 나누는 것을 방지합니다.
+                    if (total === 0) {
+                        return '0%';
+                    }
+                    // 백분율을 계산하고 소수점 첫째 자리까지 표시합니다.
+                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                    return percentage;
+                },
+            },
         },
     };
 
