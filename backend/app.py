@@ -802,7 +802,7 @@ def get_all_users(current_user):
     if not conn: return jsonify({"message": "Database connection failed"}), 500
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute("SELECT id, username, last_login FROM Users ORDER BY id")
+            cursor.execute("SELECT id, username, team, last_login FROM Users ORDER BY id")
             users = cursor.fetchall()
             return jsonify(users)
     except Exception as e:
