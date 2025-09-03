@@ -67,10 +67,15 @@ function KpiPieChart({ kpiData }) {
                 font: {
                     weight: 'bold', // 글자 두께: 굵게
                 },
-                formatter: (value) => {
+                formatter: (value, context) => {
                     // 값이 0인 항목은 백분율을 표시하지 않습니다.
                     if (value === 0) {
                         return '';
+                    }
+                    // 컨텍스트에서 직접 총합을 다시 계산하여, 재렌더링 시 발생할 수 있는 문제를 방지합니다.
+                    const total = context.chart.data.datasets[0].data.reduce((acc, cur) => acc + cur, 0);
+                    if (total === 0) {
+                        return ''; // 0으로 나누기 방지
                     }
                     const percentage = ((value / total) * 100).toFixed(1) + '%';
                     return percentage;
