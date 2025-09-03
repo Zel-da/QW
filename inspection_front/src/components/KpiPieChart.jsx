@@ -8,7 +8,6 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 function KpiPieChart({ kpiData }) {
     // kpiData가 없을 경우, 차트를 렌더링하지 않거나 로딩 상태를 표시합니다.
-    // 이렇게 하면 kpiData.delayed와 같은 속성 접근 시 발생하는 오류를 방지할 수 있습니다.
     if (!kpiData) {
         return <div>Loading chart...</div>;
     }
@@ -18,6 +17,9 @@ function KpiPieChart({ kpiData }) {
         kpiData.inProgress || 0,
         kpiData.completed || 0,
     ];
+
+    // 데이터의 총합을 계산합니다.
+    const total = chartValues.reduce((acc, cur) => acc + cur, 0);
 
     const data = {
         labels: ['지연', '진행 중', '완료'],
@@ -53,26 +55,23 @@ function KpiPieChart({ kpiData }) {
                     label: function (context) {
                         const label = context.label || '';
                         const value = context.raw || 0;
-                        const total = context.chart.getDatasetMeta(0).total;
                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
                         return `${label}: ${value} (${percentage})`;
                     },
                 },
             },
             datalabels: {
+                // 데이터 총합이 0보다 클 때만 레이블을 표시하여 오류를 방지합니다.
+                display: total > 0,
                 color: '#000000', // 글자색: 검정
                 font: {
                     weight: 'bold', // 글자 두께: 굵게
                 },
-                // 포매터 함수는 각 데이터 항목에 대한 레이블을 생성합니다.
-                formatter: (value, context) => {
-                    // 전체 합계를 계산합니다.
-                    const total = context.chart.data.datasets[0].data.reduce((acc, cur) => acc + cur, 0);
-                    // 0으로 나누는 것을 방지합니다.
-                    if (total === 0) {
-                        return '0%';
+                formatter: (value) => {
+                    // 값이 0인 항목은 백분율을 표시하지 않습니다.
+                    if (value === 0) {
+                        return '';
                     }
-                    // 백분율을 계산하고 소수점 첫째 자리까지 표시합니다.
                     const percentage = ((value / total) * 100).toFixed(1) + '%';
                     return percentage;
                 },
