@@ -11,6 +11,7 @@ function InspectionDashboard({ user }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'inProgress', 'completed', 'delayed'
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchData = async () => {
         if (!user) {
@@ -46,6 +47,11 @@ function InspectionDashboard({ user }) {
         return allInspections.filter(item => calculateStatus(item) === statusFilter);
     }, [statusFilter, allInspections]);
 
+    // 필터가 변경되면 항상 1페이지로 리셋합니다.
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter]);
+
     return (
         <>
             <div className={styles.contentTitleArea}>
@@ -62,6 +68,8 @@ function InspectionDashboard({ user }) {
                         user={user}
                         inspections={filteredByKpi}
                         onSuccess={fetchData}
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
                     />
                 )}
             </div>

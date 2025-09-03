@@ -222,3 +222,45 @@
         align-items: flex-end;
     }
 }
+
+.truncate {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+    gap: 8px;
+}
+
+.pageButton {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.pageButton:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.pageButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pageButton.active {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    font-weight: bold;
+}

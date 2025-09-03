@@ -55,6 +55,7 @@ function QualityImprovement({ user }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchData = async () => {
         try {
@@ -85,6 +86,10 @@ function QualityImprovement({ user }) {
         return allItems.filter(item => calculateStatus(item) === statusFilter);
     }, [statusFilter, allItems]);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter]);
+
     if (isLoading) return <div>로딩 중...</div>;
     if (error) return <div>오류: {error}</div>;
 
@@ -96,7 +101,13 @@ function QualityImprovement({ user }) {
             </div>
             <div className={styles.scrollableContent}>
                 <QualityKpiSection items={allItems} onKpiClick={handleKpiClick} />
-                <QualityListSection user={user} items={filteredByKpi} onAddSuccess={fetchData} />
+                <QualityListSection 
+                    user={user} 
+                    items={filteredByKpi} 
+                    onAddSuccess={fetchData} 
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                />
             </div>
         </>
     );

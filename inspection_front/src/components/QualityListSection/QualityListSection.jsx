@@ -6,7 +6,7 @@ import QualityDetailModal from '../QualityDetailModal/QualityImprovementDetailMo
 import FilterModal from '../FilterModal/FilterModal.jsx';
 import { calculateStatus, statusMap } from '../../utils';
 
-function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
+function QualityListSection({ user, items, onAddSuccess, currentPage, setCurrentPage }) {
     const [filteredItems, setFilteredItems] = useState([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -34,15 +34,33 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
         }
     }, [filters, items]);
 
+    // --- 페이지네이션 로직 ---
+    const itemsPerPage = 10;
+    const pageCount = Math.ceil(filteredItems.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const paginatedItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber > 0 && pageNumber <= pageCount) {
+            setCurrentPage(pageNumber);
+        }
+    };
+    // --- 페이지네이션 로직 끝 ---
+
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setCurrentPage(1); // 필터 변경 시 1페이지로 리셋
     };
 
     const handleOpenAddModal = () => { if (!user) { alert('로그인이 필요합니다.'); return; } setIsAddModalOpen(true); };
     const handleRowClick = (item) => { setSelectedItem(item); setIsDetailModalOpen(true); };
 
-    const applyFiltersFromModal = (newFilters) => { setFilters(newFilters); };
+    const applyFiltersFromModal = (newFilters) => { 
+        setFilters(newFilters); 
+        setCurrentPage(1); // 필터 변경 시 1페이지로 리셋
+    };
 
     return (
         <>
@@ -54,8 +72,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                             {filterOptions.usernames.map(opt => <option key={opt} value={opt}>{opt === 'all' ? '담당자 전체' : opt}</option>)}
                         </select>
                         <select name="company_name" value={filters.company_name} onChange={handleFilterChange}>
-                            {filterOptions.company_names.map(opt => <option key={opt} value={opt}>{opt === 'all' ? '업체 전체' : opt}</option>)}
-                        </select>
+                            {filterOptions.company_names.map(opt => <option key={opt} value={opt}>{opt === 'all' ? '업체 전체' : opt}</option>)}                        </select>
                         <select name="status" value={filters.status} onChange={handleFilterChange}>
                             {filterOptions.statuses.map(opt => (<option key={opt} value={opt}>{opt === 'all' && '상태 전체'}{opt === 'delayed' && '지연'}{opt === 'inProgress' && '진행중'}{opt === 'completed' && '완료'}</option>))}
                         </select>
@@ -81,7 +98,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredItems.map((item) => (
+                        {paginatedItems.map((item) => (
                             <tr key={item.id} onClick={() => handleRowClick(item)} className={styles.clickableRow}>
                                 <td>{item.username}</td>
                                 <td>{item.company_name}</td>
@@ -95,7 +112,7 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                     </tbody>
                 </table>
                 <div className={styles.cardList}>
-                    {filteredItems.map(item => (
+                    {paginatedItems.map(item => (
                         <div key={item.id} className={styles.card} onClick={() => handleRowClick(item)}>
                             <div className={styles.cardRow}>
                                 <div className={styles.cardItem}>
@@ -129,6 +146,34 @@ function QualityListSection({ user, items, onRowClick, onAddSuccess }) {
                         </div>
                     ))}
                 </div>
+
+                {pageCount > 1 && (
+                    <div className={styles.pagination}>
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={styles.pageButton}
+                        >
+                            이전
+                        </button>
+                        {Array.from({ length: pageCount }, (_, index) => (
+                            <button
+                                key={index + 1}
+                                onClick={() => handlePageChange(index + 1)}
+                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.active : ''}`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === pageCount}
+                            className={styles.pageButton}
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
             </section>
 
             {isAddModalOpen && user && (<AddQualityItemModal user={user} onClose={() => setIsAddModalOpen(false)} onSuccess={onAddSuccess} />)}

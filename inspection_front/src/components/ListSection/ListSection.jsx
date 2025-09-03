@@ -6,7 +6,7 @@ import InspectionDetailModal from '../InspectionDetailModal/InspectionDetailModa
 import FilterModal from '../FilterModal/FilterModal.jsx';
 import { calculateStatus, statusMap } from '../../utils';
 
-function ListSection({ user, inspections, onSuccess }) {
+function ListSection({ user, inspections, onSuccess, currentPage, setCurrentPage }) {
     const [filteredInspections, setFilteredInspections] = useState([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -36,9 +36,24 @@ function ListSection({ user, inspections, onSuccess }) {
         }
     }, [filters, inspections]);
 
+    // --- 페이지네이션 로직 ---
+    const itemsPerPage = 10;
+    const pageCount = Math.ceil(filteredInspections.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const paginatedInspections = filteredInspections.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber > 0 && pageNumber <= pageCount) {
+            setCurrentPage(pageNumber);
+        }
+    };
+    // --- 페이지네이션 로직 끝 ---
+
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setCurrentPage(1); // 필터 변경 시 1페이지로 리셋
     };
 
     const handleOpenAddModal = () => {
@@ -53,6 +68,7 @@ function ListSection({ user, inspections, onSuccess }) {
 
     const applyFiltersFromModal = (newFilters) => {
         setFilters(newFilters);
+        setCurrentPage(1); // 필터 변경 시 1페이지로 리셋
     };
 
     return (
@@ -99,7 +115,7 @@ function ListSection({ user, inspections, onSuccess }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredInspections.map((item) => (
+                        {paginatedInspections.map((item) => (
                             <tr key={item.id} onClick={() => handleRowClick(item)} className={styles.clickableRow}>
                                 <td>{item.username}</td>
                                 <td>{item.company_name}</td>
@@ -117,7 +133,7 @@ function ListSection({ user, inspections, onSuccess }) {
                 </table>
 
                 <div className={styles.cardList}>
-                    {filteredInspections.map(item => (
+                    {paginatedInspections.map(item => (
                         <div key={item.id} className={styles.card} onClick={() => handleRowClick(item)}>
                             <div className={styles.cardRow}>
                                 <div className={styles.cardItem}>
@@ -151,6 +167,34 @@ function ListSection({ user, inspections, onSuccess }) {
                         </div>
                     ))}
                 </div>
+
+                {pageCount > 1 && (
+                    <div className={styles.pagination}>
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={styles.pageButton}
+                        >
+                            이전
+                        </button>
+                        {Array.from({ length: pageCount }, (_, index) => (
+                            <button
+                                key={index + 1}
+                                onClick={() => handlePageChange(index + 1)}
+                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.active : ''}`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === pageCount}
+                            className={styles.pageButton}
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
             </section>
 
             {isDetailModalOpen && (<InspectionDetailModal user={user} item={selectedItem} onClose={() => setIsDetailModalOpen(false)} onUpdate={onSuccess} />)}

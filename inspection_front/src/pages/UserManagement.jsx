@@ -13,6 +13,10 @@ const UserManagement = () => {
     const [editingUserId, setEditingUserId] = useState(null);
     const [editingTeam, setEditingTeam] = useState('');
 
+    // 페이지네이션 상태 추가
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const fetchUsers = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -32,22 +36,6 @@ const UserManagement = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewUser(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleEditClick = (user) => {
-        setEditingUserId(user.id);
-        setEditingTeam(user.team || '');
-    };
-
-    const handleUpdateUser = async (id) => {
-        try {
-            await updateUser(id, { team: editingTeam });
-            setEditingUserId(null); // Exit editing mode
-            setEditingTeam(''); // Clear editing state
-            await fetchUsers(); // Refresh user list
-        } catch (err) {
-            alert(`팀 업데이트 실패: ${err.message}`);
-        }
     };
 
     const handleCreateUser = async (e) => {
@@ -76,6 +64,15 @@ const UserManagement = () => {
             } catch (err) {
                 alert(`삭제 실패: ${err.message}`);
             }
+        }
+    };
+
+    // 페이지네이션 로직
+    const pageCount = Math.ceil(users.length / itemsPerPage);
+    const paginatedUsers = users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber > 0 && pageNumber <= pageCount) {
+            setCurrentPage(pageNumber);
         }
     };
 
@@ -133,12 +130,13 @@ const UserManagement = () => {
                         <tr>
                             <th>ID</th>
                             <th>사용자명</th>
+                            <th>팀</th>
                             <th>마지막 로그인</th>
                             <th>조치</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(user => (
+                        {paginatedUsers.map(user => (
                             <tr key={user.id}>
                                 <td>{user.id}</td>
                                 <td>{user.username}</td>
@@ -156,6 +154,20 @@ const UserManagement = () => {
                         ))}
                     </tbody>
                 </table>
+                {pageCount > 1 && (
+                    <div className={styles.pagination}>
+                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className={styles.pageButton}>이전</button>
+                        {Array.from({ length: pageCount }, (_, index) => (
+                            <button
+                                key={index + 1}
+                                onClick={() => handlePageChange(index + 1)}
+                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.active : ''}`}>
+                                {index + 1}
+                            </button>
+                        ))}
+                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === pageCount} className={styles.pageButton}>다음</button>
+                    </div>
+                )}
             </div>
         </div>
     );
