@@ -115,8 +115,8 @@ function EditInspectionModal({ item, onClose, onSuccess }) {
                     </div>
                     {/* 8줄: 진행률 */}
                     <div className={styles.fullWidth}>
-                        <label>진행률: {formData.progress_percentage}%</label>
-                        <input type="range" name="progress_percentage" value={formData.progress_percentage} onChange={handleChange} min="0" max="100" step="5" className={styles.slider} style={{ '--progress-percent': `${formData.progress_percentage}%` }} />
+                        <label>진행률 (%)</label>
+                        <input type="number" name="progress_percentage" value={formData.progress_percentage || ''} onChange={handleChange} min="0" max="100" />
                     </div>
                     
                     <div className={styles.formActions}>

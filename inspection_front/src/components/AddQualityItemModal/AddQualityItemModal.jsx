@@ -67,8 +67,8 @@ function AddQualityItemModal({ user, onClose, onSuccess }) {
                         <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} />
                     </div>
                     <div className={styles.fullWidth}>
-                        <label>진행률: {formData.progress}%</label>
-                        <input type="range" name="progress" value={formData.progress} onChange={handleChange} min="0" max="100" step="5" className={styles.slider} style={{ '--progress-percent': `${formData.progress}%` }} />
+                        <label>진행률 (%)</label>
+                        <input type="number" name="progress" value={formData.progress} onChange={handleChange} min="0" max="100" />
                     </div>
                     {error && <p className={styles.error}>{error}</p>}
                     <div className={styles.formActions}>
