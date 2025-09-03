@@ -3,8 +3,8 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-// [수정 1] 전역 플러그인 등록 해제: ChartDataLabels를 전역에서 제거하여 생명주기 충돌을 방지합니다.
-ChartJS.register(ArcElement, Tooltip, Legend);
+// [수정] 플러그인을 다시 전역으로 등록합니다. (표준 방식)
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 function KpiPieChart({ kpiData }) {
     if (!kpiData) {
@@ -31,14 +31,14 @@ function KpiPieChart({ kpiData }) {
                     '#ffe082', // 진행 중
                     '#a5d6a7', // 완료
                 ],
-                borderWidth: 1, // 테두리 두께 조정
+                borderWidth: 1,
             },
         ],
     };
 
     const options = {
         responsive: true,
-        maintainAspectRatio: false, // [수정 4] 컨테이너 크기에 맞게 비율을 유연하게 조정
+        maintainAspectRatio: false,
         plugins: {
             legend: {
                 position: 'top',
@@ -50,6 +50,7 @@ function KpiPieChart({ kpiData }) {
                     size: 16,
                 },
             },
+            // 툴팁과 데이터레이블이 모두 정상적으로 동작해야 합니다.
             tooltip: {
                 callbacks: {
                     label: function (context) {
@@ -81,11 +82,10 @@ function KpiPieChart({ kpiData }) {
         },
     };
 
-    // [수정 2] 래퍼(div) 추가 및 크기 보장: 차트가 그려질 공간을 명시적으로 확보합니다.
-    // [수정 3] 로컬 플러그인 전달: plugins prop을 통해 이 차트 인스턴스에만 플러그인을 적용합니다.
+    // [수정] 로컬 플러그인 전달(plugins prop)을 제거합니다.
     return (
         <div style={{ position: 'relative', height: '350px', width: '100%' }}>
-            <Pie data={data} options={options} plugins={[ChartDataLabels]} />
+            <Pie data={data} options={options} />
         </div>
     );
 }
