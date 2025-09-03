@@ -66,6 +66,7 @@ function KpiPieChart({ kpiData }) {
                 color: '#000000',
                 font: {
                     weight: 'bold',
+                    size: 36, // 요청에 따라 폰트 크기를 3배로 설정
                 },
                 formatter: (value, context) => {
                     if (value === 0) {
