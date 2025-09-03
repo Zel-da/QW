@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getUsers, createUser, deleteUser } from '../api/userApi';
+import { getUsers, createUser, deleteUser, updateUser } from '../api/userApi'; // updateUser 임포트
 import styles from './UserManagement.module.css';
 
 const UserManagement = () => {
@@ -10,10 +10,11 @@ const UserManagement = () => {
     const [newUser, setNewUser] = useState({ username: '', password: '', team: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // 수정 관련 상태
     const [editingUserId, setEditingUserId] = useState(null);
     const [editingTeam, setEditingTeam] = useState('');
 
-    // 페이지네이션 상태 추가
+    // 페이지네이션 상태
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -47,8 +48,8 @@ const UserManagement = () => {
         setIsSubmitting(true);
         try {
             await createUser(newUser);
-            setNewUser({ username: '', password: '', team: '' }); // Reset form
-            await fetchUsers(); // Refresh user list
+            setNewUser({ username: '', password: '', team: '' });
+            await fetchUsers();
         } catch (err) {
             alert(`사용자 추가 실패: ${err.message}`);
         } finally {
@@ -57,17 +58,39 @@ const UserManagement = () => {
     };
 
     const handleDeleteUser = async (id) => {
-        if (window.confirm(`정말로 이 사용자를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+        if (window.confirm(`정말로 이 사용자를 삭제하시겠습니까?`)) {
             try {
                 await deleteUser(id);
-                await fetchUsers(); // Refresh user list
+                await fetchUsers();
             } catch (err) {
                 alert(`삭제 실패: ${err.message}`);
             }
         }
     };
 
-    // 페이지네이션 로직
+    // --- 수정 관련 핸들러 ---
+    const handleEditClick = (user) => {
+        setEditingUserId(user.id);
+        setEditingTeam(user.team || '');
+    };
+
+    const handleCancelEdit = () => {
+        setEditingUserId(null);
+        setEditingTeam('');
+    };
+
+    const handleUpdateUser = async (id) => {
+        try {
+            await updateUser(id, { team: editingTeam });
+            setEditingUserId(null);
+            setEditingTeam('');
+            await fetchUsers();
+        } catch (err) {
+            alert(`팀 업데이트 실패: ${err.message}`);
+        }
+    };
+
+    // --- 페이지네이션 로직 ---
     const pageCount = Math.ceil(users.length / itemsPerPage);
     const paginatedUsers = users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const handlePageChange = (pageNumber) => {
@@ -76,13 +99,8 @@ const UserManagement = () => {
         }
     };
 
-    if (isLoading) {
-        return <div className={styles.message}>로딩 중...</div>;
-    }
-
-    if (error) {
-        return <div className={`${styles.message} ${styles.error}`}>오류: {error}</div>;
-    }
+    if (isLoading) return <div className={styles.message}>로딩 중...</div>;
+    if (error) return <div className={`${styles.message} ${styles.error}`}>오류: {error}</div>;
 
     return (
         <div className={styles.container}>
@@ -91,35 +109,10 @@ const UserManagement = () => {
             <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>새 사용자 추가</h2>
                 <form onSubmit={handleCreateUser} className={styles.form}>
-                    <input 
-                        type="text" 
-                        name="username" 
-                        placeholder="새 사용자명" 
-                        value={newUser.username} 
-                        onChange={handleInputChange} 
-                        className={styles.input}
-                        required
-                    />
-                    <input 
-                        type="password" 
-                        name="password" 
-                        placeholder="새 비밀번호" 
-                        value={newUser.password} 
-                        onChange={handleInputChange} 
-                        className={styles.input}
-                        required
-                    />
-                    <input 
-                        type="text" 
-                        name="team" 
-                        placeholder="팀 (선택 사항)" 
-                        value={newUser.team} 
-                        onChange={handleInputChange} 
-                        className={styles.input}
-                    />
-                    <button type="submit" className={styles.button} disabled={isSubmitting}>
-                        {isSubmitting ? '추가 중...' : '사용자 추가'}
-                    </button>
+                    <input type="text" name="username" placeholder="새 사용자명" value={newUser.username} onChange={handleInputChange} className={styles.input} required />
+                    <input type="password" name="password" placeholder="새 비밀번호" value={newUser.password} onChange={handleInputChange} className={styles.input} required />
+                    <input type="text" name="team" placeholder="팀 (선택 사항)" value={newUser.team} onChange={handleInputChange} className={styles.input} />
+                    <button type="submit" className={styles.button} disabled={isSubmitting}>{isSubmitting ? '추가 중...' : '사용자 추가'}</button>
                 </form>
             </div>
 
@@ -140,15 +133,29 @@ const UserManagement = () => {
                             <tr key={user.id}>
                                 <td>{user.id}</td>
                                 <td>{user.username}</td>
-                                <td>{user.team || '미지정'}</td>
-                                <td>{user.last_login ? new Date(user.last_login).toLocaleString() : 'N/A'}</td>
                                 <td>
-                                    <button 
-                                        className={styles.deleteButton}
-                                        onClick={() => handleDeleteUser(user.id)}
-                                    >
-                                        삭제
-                                    </button>
+                                    {editingUserId === user.id ? (
+                                        <input 
+                                            type="text" 
+                                            value={editingTeam}
+                                            onChange={(e) => setEditingTeam(e.target.value)}
+                                            className={styles.editInput}
+                                        />
+                                    ) : (
+                                        user.team || '미지정'
+                                    )}
+                                </td>
+                                <td>{user.last_login ? new Date(user.last_login).toLocaleString() : 'N/A'}</td>
+                                <td className={styles.actionCell}>
+                                    {editingUserId === user.id ? (
+                                        <>
+                                            <button className={styles.saveButton} onClick={() => handleUpdateUser(user.id)}>저장</button>
+                                            <button className={styles.cancelButton} onClick={handleCancelEdit}>취소</button>
+                                        </>
+                                    ) : (
+                                        <button className={styles.editButton} onClick={() => handleEditClick(user)}>수정</button>
+                                    )}
+                                    <button className={styles.deleteButton} onClick={() => handleDeleteUser(user.id)}>삭제</button>
                                 </td>
                             </tr>
                         ))}
