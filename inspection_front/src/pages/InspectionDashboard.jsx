@@ -6,6 +6,8 @@ import styles from './InspectionDashboard.module.css';
 
 import { calculateStatus } from '../utils';
 
+import Spinner from '../components/Spinner/Spinner.jsx';
+
 function InspectionDashboard({ user }) {
     const [allInspections, setAllInspections] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ function InspectionDashboard({ user }) {
             </div>
             <div className={styles.scrollableContent}>
                 <KpiSection inspections={allInspections} onKpiClick={handleKpiClick} />
-                {loading && <p>로딩 중...</p>}
+                {loading && <Spinner />}
                 {error && <p>데이터 로딩 실패: {error}</p>}
                 {!loading && !error && (
                     <ListSection

@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
 import Header from './components/Header/Header.jsx';
-import LoginModal from './components/LoginModal/LoginModal.jsx'; // Import LoginModal
+import LoginModal from './components/LoginModal/LoginModal.jsx';
 import InspectionDashboard from './pages/InspectionDashboard.jsx';
 import QualityImprovement from './pages/QualityImprovement.jsx';
 import MyPosts from './pages/MyPosts.jsx';
 import UserManagement from './pages/UserManagement.jsx';
+import Spinner from './components/Spinner/Spinner.jsx'; // Spinner 임포트
 import './index.css';
 import styles from './App.module.css';
-import { subscribeToLoading } from './api/api.js'; // Import subscribeToLoading
+import { subscribeToLoading } from './api/api.js';
 
 const AppContent = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [isLoading, setIsLoading] = useState(true); // 초기 인증 로딩
   const [globalLoadingState, setGlobalLoadingState] = useState({ isLoading: false, isColdStarting: false, loadingMessage: '' });
   const [isSidebarVisible, setIsSidebarVisible] = useState(window.innerWidth > 768);
 
@@ -26,22 +27,12 @@ const AppContent = () => {
         setIsSidebarVisible(false);
       }
     };
-
     window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const closeSidebar = () => {
-    setIsSidebarVisible(false);
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
-
+  const closeSidebar = () => setIsSidebarVisible(false);
+  const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
   const isMobile = () => window.innerWidth <= 768;
 
   useEffect(() => {
@@ -53,37 +44,40 @@ const AppContent = () => {
           setCurrentUser({ name: decodedUser.username, id: decodedUser.user_id });
         } else {
           localStorage.removeItem('token');
-          setIsLoginModalOpen(true); // Open login modal if token is expired
+          setIsLoginModalOpen(true);
         }
       } catch (error) {
         console.error('Invalid token:', error);
         localStorage.removeItem('token');
-        setIsLoginModalOpen(true); // Open login modal if token is invalid
+        setIsLoginModalOpen(true);
       }
     } else {
-      setIsLoginModalOpen(true); // Open login modal if no token
+      setIsLoginModalOpen(true);
     }
-    setIsLoading(false); // Finished initial auth check
+    setIsLoading(false);
 
-    // Subscribe to global loading state changes
     const unsubscribe = subscribeToLoading(setGlobalLoadingState);
-    return () => unsubscribe(); // Cleanup subscription
+    return () => unsubscribe();
   }, []);
 
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
-    setIsLoginModalOpen(false); // Close modal on successful login
+    setIsLoginModalOpen(false);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
-    setIsLoginModalOpen(true); // Re-open login modal on logout
+    setIsLoginModalOpen(true);
   };
 
-  // Render nothing until the initial token check is complete
+  // 초기 인증 확인 중일 때 전체 화면 스피너 표시
   if (isLoading) {
-    return null; // Or a loading spinner
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spinner size="60px" />
+      </div>
+    );
   }
 
   return (
@@ -91,18 +85,15 @@ const AppContent = () => {
       {globalLoadingState.isLoading && (
         <div className="global-loading-overlay">
           <div className="global-loading-message">
-            {globalLoadingState.isColdStarting ? (
-              <p>{globalLoadingState.loadingMessage}</p>
-            ) : (
-              <p>로딩 중...</p>
-            )}
+            <Spinner />
+            <p>{globalLoadingState.isColdStarting ? globalLoadingState.loadingMessage : '로딩 중...'}</p>
           </div>
         </div>
       )}
 
       {isLoginModalOpen && (
         <LoginModal
-          onClose={() => {}} // Prevent closing modal by clicking outside when forced
+          onClose={() => {}}
           onLoginSuccess={handleLoginSuccess}
         />
       )}
@@ -116,7 +107,7 @@ const AppContent = () => {
         <main className={styles.mainContentContainer}>
           <Header
             user={currentUser}
-            onLoginClick={() => setIsLoginModalOpen(true)} // Pass handler to open modal
+            onLoginClick={() => setIsLoginModalOpen(true)}
             onLogout={handleLogout}
             onToggleSidebar={toggleSidebar}
           />
@@ -136,12 +127,10 @@ const AppContent = () => {
   );
 };
 
-const App = () => {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
-  );
-};
+const App = () => (
+  <BrowserRouter>
+    <AppContent />
+  </BrowserRouter>
+);
 
 export default App;

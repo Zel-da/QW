@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getUsers, createUser, deleteUser, updateUser } from '../api/userApi'; // updateUser 임포트
 import styles from './UserManagement.module.css';
 
+import Spinner from '../components/Spinner/Spinner.jsx';
+
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -99,7 +101,7 @@ const UserManagement = () => {
         }
     };
 
-    if (isLoading) return <div className={styles.message}>로딩 중...</div>;
+    if (isLoading) return <Spinner />;
     if (error) return <div className={`${styles.message} ${styles.error}`}>오류: {error}</div>;
 
     return (
